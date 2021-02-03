@@ -203,7 +203,7 @@ void Gui::handleKeyDown(const SDL_Event& e)
             newGame();
             break;
         }
-        case SDLK_s:
+        case SDLK_s: //s to change side ||  s to change side ||  s to change side ||  s to change side ||  s to change side ||  s to change side ||  s to change side || 
         {
 			//s for switch side
             switchSide();
