@@ -31,6 +31,7 @@ Gui::Gui()
     }
     else
     {
+		//create the window
         window = SDL_CreateWindow("Ludus Chess", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_SIZE, SCREEN_SIZE, SDL_WINDOW_SHOWN);
 
         if(window == NULL)
@@ -39,6 +40,7 @@ Gui::Gui()
         }
         else
         {
+			//create renderer
             renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
         }
     }
@@ -46,6 +48,7 @@ Gui::Gui()
 
 void Gui::initSurface()
 {
+	//initialise all images
     tileSurface[0] = IMG_Load("imgs/whiteSqr.png");
     tileSurface[1] = IMG_Load("imgs/blackSqr.png");
     tileSurface[2] = IMG_Load("imgs/lastmovelight.png");
@@ -69,6 +72,7 @@ void Gui::initSurface()
     lastmoveTextureLight = SDL_CreateTextureFromSurface(renderer, tileSurface[2]);
     lastmoveTextureDark = SDL_CreateTextureFromSurface(renderer, tileSurface[3]);
 
+	//set icon
     SDL_SetWindowIcon(window, pieceSurface[7]);
 }
 
@@ -195,11 +199,13 @@ void Gui::handleKeyDown(const SDL_Event& e)
     {
         case SDLK_n:
         {
+			//n for new game
             newGame();
             break;
         }
         case SDLK_s:
         {
+			//s for switch side
             switchSide();
         }
     }
@@ -226,7 +232,7 @@ void Gui::newGame()
     render();
 }
 
-void Gui::switchSide()
+void Gui::switchSide() //here change for two players ?
 {
     if (AI == BLACK)
     {
@@ -320,6 +326,10 @@ void Gui::movePiece(const SDL_Event& e)
             if (move != 0 && game.makeMove(move))
             {
                 updatePieceLocation(move, i);
+				//two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode ||
+				//if(twoplayer){
+				//switchSide();
+				//}
             }
             else
             {
@@ -454,6 +464,11 @@ void Gui::handlePromoteMove()
 
     game.getBoard().moves.clear();
     game.generateMove(false);
+
+	//two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode ||
+	//if(twoplayer){
+	//switchSide();
+	//}
 }
 
 void Gui::setLastMovePos(int from, int to)
