@@ -203,7 +203,7 @@ void Gui::handleKeyDown(const SDL_Event& e)
             newGame();
             break;
         }
-        case SDLK_s:
+        case SDLK_s: // s to change side || s to change side || s to change side || s to change side || s to change side || s to change side || s to change side || s to change side || s to change side || 
         {
 			//s for switch side
             switchSide();
@@ -232,7 +232,7 @@ void Gui::newGame()
     render();
 }
 
-void Gui::switchSide() //here change for two players ?
+void Gui::switchSide()
 {
     if (AI == BLACK)
     {
@@ -323,13 +323,20 @@ void Gui::movePiece(const SDL_Event& e)
 
             move = utils::parseMove(move, game);
 
-            if (move != 0 && game.makeMove(move))
+            if (move != 0)
             {
-                updatePieceLocation(move, i);
-				//two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode ||
-				//if(twoplayer){
-				//switchSide();
-				//}
+				printf("maybe\n");
+				if (game.makeMove(move)) {
+					printf("move\n");
+					updatePieceLocation(move, i);
+					//two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode ||
+					//if(twoplayer){
+					//switchSide();
+					//}
+				}
+				else {
+					pieceMovingInfo.tile->alignPiece();
+				}
             }
             else
             {
