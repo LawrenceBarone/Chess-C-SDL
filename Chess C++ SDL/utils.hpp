@@ -66,6 +66,7 @@ Move parseMove(Move m, board::Game& game)
 
 void loadFen(std::string fen, board::Game& game)
 {
+	//Dictionnary of each letters to Pieces
 	std::map<char, Piece> pieceMap =
 	{
 		{'r', bR}, {'n', bN}, {'b', bB}, {'q', bQ}, {'k', bK}, {'p', bP},
@@ -76,6 +77,7 @@ void loadFen(std::string fen, board::Game& game)
 	int file = 0;
 	int i = 0;
 
+	//Reading the fen to place the Pieces on the board
 	while (fen[i] != ' ')
 	{
 		if (fen[i] == '/')
@@ -100,8 +102,16 @@ void loadFen(std::string fen, board::Game& game)
 		++i;
 	}
 
+	//Reading the fen to define which side begins
 	game.getBoard().side = fen[++i] == 'w' ? WHITE : BLACK;
 
+	//Reading fen to define the shifts of each castle
+	/*
+	*	K = white king side
+	*	Q = while queen side
+	*	k = black king side
+	*	q = black queen side
+	*/
 	i++;
 	while(fen[++i] != ' ')
 	{
@@ -120,6 +130,7 @@ void loadFen(std::string fen, board::Game& game)
 		else if (fen[i] == 'q')
 			game.getBoard().castle |= 1;
 	}
+
 
 	if (fen[++i] != '-')
 	{

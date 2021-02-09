@@ -59,6 +59,11 @@ enum : Sqr
 	a8 = 91, b8, c8, d8, e8, f8, g8, h8
 };
 
+static enum AIChoice : int {
+	STOCKFISH,
+	LAWRENCE
+};
+
 static std::string sqrChar[]
 {
 	"a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1",
@@ -301,7 +306,7 @@ const static Sqr mailbox[120] //Alex a parler de l'IA.
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 };
 
-const static Sqr mailbox64[64]
+const static Sqr mailbox64[64]	//coordonnées des pieces sur l'échiquier
 {
 	21, 22, 23, 24, 25, 26, 27, 28,
 	31, 32, 33, 34, 35, 36, 37, 38,

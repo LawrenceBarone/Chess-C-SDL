@@ -19,6 +19,31 @@ void consoleInterface()
 	print("Starting Yel 1.0 Chess Engine!");
 	print("");
 
+	// string d'initialisation
+	/*
+	* minuscule = black
+	* Majuscule = while
+	* 
+	*	r = rook
+	*	n = knight
+	*	b = bishop
+	*	q = queen
+	*	k = king
+	*	p = pawn
+	* 
+	*	/ = next line
+	* 
+	*	8 = empty
+	* 
+	*	w = white begins
+	* 
+	* castles
+	*	K = white king side
+	*	Q = while queen side
+	*	k = black king side
+	*	q = black queen side
+	* 
+	*/
 	const std::string Startfen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 	board::Game game;

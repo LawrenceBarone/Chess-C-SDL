@@ -22,6 +22,8 @@ void Game::init()
 	}
 	initHash();
 	initMvvLva();
+
+	histoPos_stockfish = "";
 }
 
 void Game::initMvvLva() {
@@ -941,6 +943,17 @@ void Game::clearPv(board::Game& game)
         game.getBoard().pv[i].m = 0;
         game.getBoard().pv[i].s = 0;
     }
+}
+
+
+
+std::string Game::getHistoPos_stockfish() {
+	return histoPos_stockfish;
+}
+
+void Game::addToHistoPos_stockfish(std::string pos)
+{
+	histoPos_stockfish += pos + " ";
 }
 
 } // namespace board
