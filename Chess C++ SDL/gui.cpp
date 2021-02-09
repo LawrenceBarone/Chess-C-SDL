@@ -150,6 +150,11 @@ void Gui::init()
     threadData = new ThreadData;
     threadData->gui = this;
 
+	//choix de la couleur || choix de la couleur || choix de la couleur || choix de la couleur || choix de la couleur || choix de la couleur || choix de la couleur || 
+	//if(colorChoose == BLACK){
+	//switchside();
+	//}
+
 	//IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA ||
 	/*if (iavsia) {
 		AI = WHITE;
