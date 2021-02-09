@@ -1,5 +1,6 @@
 #define GUI
 #include <SDL.h>
+#include <SDL_mixer.h>
 #include <stdio.h>
 
 #ifdef GUI
@@ -10,6 +11,8 @@
 
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
+
+Mix_Music* music;
 
 #ifndef GUI
 extern void search(board::Game& game);
@@ -129,6 +132,20 @@ void consoleInterface()
 
 int main(int argc, char* args[])
 {
+	//init music
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024) < 0) {
+		return false;
+	}
+
+	// Load music
+	music = Mix_LoadMUS("music/chopin.wav");
+	if (!music) {
+		return false;
+	}
+
+	// Play music forever
+	Mix_PlayMusic(music, -1);
+
 	/*bool btnG = false;
 	bool quit = false;
 	SDL_Event e;

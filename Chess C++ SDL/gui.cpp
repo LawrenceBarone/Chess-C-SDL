@@ -24,6 +24,20 @@ static int aiThreadSeach(void* data)
     ThreadData* dataThread = (ThreadData*) data;
     dataThread->gui->moveAI();
 
+	//AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI ||
+	/*if (iavsia) {
+		if (dataThread->gui->AI == BLACK)
+		{
+			dataThread->gui->AI = WHITE;
+		}
+		else
+		{
+			dataThread->gui->AI = BLACK;
+		}
+		dataThread->gui->render();
+		printf("ai move");
+	}*/
+
     return 0;
 }
 
@@ -35,6 +49,7 @@ Gui::Gui()
     }
     else
     {
+		//create the window
         window = SDL_CreateWindow("Ludus Chess", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_SIZE, SCREEN_SIZE, SDL_WINDOW_SHOWN);
 
         if(window == NULL)
@@ -43,6 +58,7 @@ Gui::Gui()
         }
         else
         {
+			//create renderer
             renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
         }
     }
@@ -51,6 +67,7 @@ Gui::Gui()
 //Read png 
 void Gui::initSurface()
 {
+	//initialise all images
     tileSurface[0] = IMG_Load("imgs/whiteSqr.png");
     tileSurface[1] = IMG_Load("imgs/blackSqr.png");
     tileSurface[2] = IMG_Load("imgs/lastmovelight.png");
@@ -75,6 +92,7 @@ void Gui::initSurface()
     lastmoveTextureLight = SDL_CreateTextureFromSurface(renderer, tileSurface[2]);
     lastmoveTextureDark = SDL_CreateTextureFromSurface(renderer, tileSurface[3]);
 
+	//set icon
     SDL_SetWindowIcon(window, pieceSurface[7]);
 }
 
@@ -137,6 +155,16 @@ void Gui::init()
 
     threadData = new ThreadData;
     threadData->gui = this;
+
+	//choix de la couleur || choix de la couleur || choix de la couleur || choix de la couleur || choix de la couleur || choix de la couleur || choix de la couleur || 
+	//if(colorChoose == BLACK){
+	//switchside();
+	//}
+
+	//IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA ||
+	/*if (iavsia) {
+		AI = WHITE;
+	}*/
 }
 
 //Launch General User interface
@@ -181,23 +209,33 @@ void Gui::handleInput()
         }
         else if (e.type == SDL_MOUSEBUTTONDOWN)
         {
-            handleMouseDown(e);
+			//IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA ||
+			//if (!iavsia) {
+				handleMouseDown(e);
+			//}
+
         }
         else if (e.type == SDL_MOUSEMOTION)
         {
+			//IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA ||
+			//if (!iavsia) {
             handleMouseMotion(e);
+			//}
         }
         else if (e.type == SDL_MOUSEBUTTONUP && e.button.button == SDL_BUTTON_LEFT)
         {
-            if (promotePieceIndex != -1)
-            {
-                handlePromoteMove();
-            }
+			//IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA ||
+			//if (!iavsia) {
+				if (promotePieceIndex != -1)
+				{
+					handlePromoteMove();
+				}
 
-            else if (pieceMovingInfo.pieceMoving != NULL)
-            {
-                movePiece(e);
-            }
+				else if (pieceMovingInfo.pieceMoving != NULL)
+				{
+					movePiece(e);
+				}
+			//}
         }
     }
 }
@@ -208,11 +246,13 @@ void Gui::handleKeyDown(const SDL_Event& e)
     {
         case SDLK_n:
         {
+			//n for new game
             newGame();
             break;
         }
-        case SDLK_s:
+        case SDLK_s: // s to change side || s to change side || s to change side || s to change side || s to change side || s to change side || s to change side || s to change side || s to change side || 
         {
+			//s for switch side
             switchSide();
         }
     }
@@ -307,7 +347,7 @@ void Gui::handleMouseDown(const SDL_Event& e)
     }
 }
 
-void Gui::movePiece(const SDL_Event& e)
+void Gui::movePiece(const SDL_Event& e) //when player move a piece
 {
     for (int i=0; i<64; i++)
     {
@@ -330,7 +370,7 @@ void Gui::movePiece(const SDL_Event& e)
 
             move = utils::parseMove(move, game);
 
-            if (move != 0 && game.makeMove(move))
+            if (move != 0)
             {
                 updatePieceLocation(move, i);
 
@@ -346,6 +386,18 @@ void Gui::movePiece(const SDL_Event& e)
                     }
                     game.addToHistoPos_stockfish(fromPos + toPos);
                 }
+				//printf("maybe\n");
+				if (game.makeMove(move)) {
+					//printf("move\n");
+					updatePieceLocation(move, i);
+					//two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode ||
+					//if(twoplayer){
+					//switchSide();
+					//}
+				}
+				else {
+					pieceMovingInfo.tile->alignPiece();
+				}
             }
             else
             {
@@ -481,6 +533,11 @@ void Gui::handlePromoteMove()
 
     game.getBoard().moves.clear();
     game.generateMove(false);
+
+	//two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode ||
+	//if(twoplayer){
+	//switchSide();
+	//}
 }
 
 void Gui::setLastMovePos(int from, int to)
