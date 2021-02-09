@@ -52,6 +52,7 @@ public:
     void setLastMovePos(int from, int to);
     void checkPromotionMove();
     void updatePieceLocation(const Move& move, const int i);
+	Sqr AI = defs::BLACK;
 
 private:
     SDL_Window *window = NULL;
@@ -60,7 +61,6 @@ private:
     SDL_Surface* tileSurface[4];
     SDL_Surface* pieceSurface[12];
     PieceMoving pieceMovingInfo {};
-    Sqr AI = defs::BLACK;
     board::Game game {};
     bool promoting = false;
     SDL_Rect promoteToPieces[4];

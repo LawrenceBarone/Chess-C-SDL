@@ -20,6 +20,20 @@ static int aiThreadSeach(void* data)
     ThreadData* dataThread = (ThreadData*) data;
     dataThread->gui->moveAI();
 
+	//AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI ||
+	/*if (iavsia) {
+		if (dataThread->gui->AI == BLACK)
+		{
+			dataThread->gui->AI = WHITE;
+		}
+		else
+		{
+			dataThread->gui->AI = BLACK;
+		}
+		dataThread->gui->render();
+		printf("ai move");
+	}*/
+
     return 0;
 }
 
@@ -135,6 +149,11 @@ void Gui::init()
 
     threadData = new ThreadData;
     threadData->gui = this;
+
+	//IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA ||
+	/*if (iavsia) {
+		AI = WHITE;
+	}*/
 }
 
 void Gui::run()
@@ -172,23 +191,33 @@ void Gui::handleInput()
         }
         else if (e.type == SDL_MOUSEBUTTONDOWN)
         {
-            handleMouseDown(e);
+			//IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA ||
+			//if (!iavsia) {
+				handleMouseDown(e);
+			//}
+
         }
         else if (e.type == SDL_MOUSEMOTION)
         {
+			//IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA ||
+			//if (!iavsia) {
             handleMouseMotion(e);
+			//}
         }
         else if (e.type == SDL_MOUSEBUTTONUP && e.button.button == SDL_BUTTON_LEFT)
         {
-            if (promotePieceIndex != -1)
-            {
-                handlePromoteMove();
-            }
+			//IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA ||
+			//if (!iavsia) {
+				if (promotePieceIndex != -1)
+				{
+					handlePromoteMove();
+				}
 
-            else if (pieceMovingInfo.pieceMoving != NULL)
-            {
-                movePiece(e);
-            }
+				else if (pieceMovingInfo.pieceMoving != NULL)
+				{
+					movePiece(e);
+				}
+			//}
         }
     }
 }
@@ -300,7 +329,7 @@ void Gui::handleMouseDown(const SDL_Event& e)
     }
 }
 
-void Gui::movePiece(const SDL_Event& e)
+void Gui::movePiece(const SDL_Event& e) //when player move a piece
 {
     for (int i=0; i<64; i++)
     {
@@ -325,9 +354,9 @@ void Gui::movePiece(const SDL_Event& e)
 
             if (move != 0)
             {
-				printf("maybe\n");
+				//printf("maybe\n");
 				if (game.makeMove(move)) {
-					printf("move\n");
+					//printf("move\n");
 					updatePieceLocation(move, i);
 					//two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode ||
 					//if(twoplayer){
