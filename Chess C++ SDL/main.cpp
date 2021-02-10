@@ -1,6 +1,7 @@
 #define GUI
 #include "global.hpp"
 #include <SDL.h>
+#include <SDL_mixer.h>
 #include <stdio.h>
 #include <string>
 #include "multiple_windows.hpp"
@@ -15,6 +16,10 @@
 
 #define SDL_MAIN_HANDLED
 #include "SDL.h"
+
+Mix_Music* music;
+
+bool soundOn = false;
 
 
 const int SCREEN_HEIGHT = 800;
@@ -33,6 +38,31 @@ void consoleInterface()
 	print("Starting Yel 1.0 Chess Engine!");
 	print("");
 
+	// string d'initialisation
+	/*
+	* minuscule = black
+	* Majuscule = while
+	* 
+	*	r = rook
+	*	n = knight
+	*	b = bishop
+	*	q = queen
+	*	k = king
+	*	p = pawn
+	* 
+	*	/ = next line
+	* 
+	*	8 = empty
+	* 
+	*	w = white begins
+	* 
+	* castles
+	*	K = white king side
+	*	Q = while queen side
+	*	k = black king side
+	*	q = black queen side
+	* 
+	*/
 	const std::string Startfen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 	board::Game game;
@@ -137,6 +167,24 @@ void close() {
 }
 int main(int argc, char* argv[])
 {
+	//init music
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024) < 0) {
+		return false;
+	}
+
+	// Load music
+	music = Mix_LoadMUS("music/chopin.wav");
+	if (!music) {
+		return false;
+	}
+
+	// Play music forever
+	if(soundOn)
+		Mix_PlayMusic(music, -1);
+
+	/*bool btnG = false;
+	bool quit = false;
+	SDL_Event e;
 
 	GlobalStruct.wChoice = "h";
 	GlobalStruct.bChoice = "ia";

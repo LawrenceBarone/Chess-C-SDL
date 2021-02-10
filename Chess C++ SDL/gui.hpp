@@ -33,13 +33,15 @@ public:
     ~Gui();
     void init();
     void run();
-    void update();
+    void update_AI();
     void render();
     void initBoard();
     void initSurface();
     void initPieces();
     bool castleMove(Move move);
     void moveAI();
+    void lawrenceMove(Move* AImove);
+    void stockfishMove(Move* AImove);
     void clearPieces();
     void handleInput();
     void handleKeyDown(const SDL_Event& e);
@@ -52,7 +54,7 @@ public:
     void setLastMovePos(int from, int to);
     void checkPromotionMove();
     void updatePieceLocation(const Move& move, const int i);
-    
+	Sqr AI = defs::BLACK;
 
 private:
     SDL_Window *window = NULL;
@@ -61,7 +63,6 @@ private:
     SDL_Surface* tileSurface[4];
     SDL_Surface* pieceSurface[12];
     PieceMoving pieceMovingInfo {};
-    Sqr AI = defs::BLACK;
     board::Game game {};
     bool promoting = false;
     SDL_Rect promoteToPieces[4];

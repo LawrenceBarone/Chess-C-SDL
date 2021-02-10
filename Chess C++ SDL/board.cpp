@@ -22,6 +22,8 @@ void Game::init()
 	}
 	initHash();
 	initMvvLva();
+
+	histoPos_stockfish = "";
 }
 
 void Game::initMvvLva() {
@@ -601,8 +603,9 @@ bool Game::makeMove(Move move)
 
 			if (WKSC(dir))
 			{
-				if (attacked(e1, BLACK) || attacked(f1, BLACK))
+				if (attacked(e1, BLACK) || attacked(f1, BLACK)) //if white king is attacked
 				{
+					//printf("check 1\n");
 					illegalCastling = true;
 				}
 
@@ -623,8 +626,9 @@ bool Game::makeMove(Move move)
 			}
 			else if (WQSC(dir))
 			{
-				if (attacked(e1, BLACK) || attacked(d1, BLACK))
+				if (attacked(e1, BLACK) || attacked(d1, BLACK)) //if white king is attacked
 				{
+					//printf("check 2\n");
 					illegalCastling = true;
 				}
 
@@ -651,8 +655,9 @@ bool Game::makeMove(Move move)
 
 			if (BKSC(dir))
 			{
-				if (attacked(e8, WHITE) || attacked(f8, WHITE))
+				if (attacked(e8, WHITE) || attacked(f8, WHITE)) //if black king is attacked
 				{
+					//printf("check 3\n");
 					illegalCastling = true;
 				}
 
@@ -674,8 +679,9 @@ bool Game::makeMove(Move move)
 			}
 			else if (BQSC(dir))
 			{
-				if (attacked(e8, WHITE) || attacked(d8, WHITE))
+				if (attacked(e8, WHITE) || attacked(d8, WHITE)) //if black king is attacked
 				{
+					//printf("check 4\n");
 					illegalCastling = true;
 				}
 
@@ -741,7 +747,7 @@ bool Game::makeMove(Move move)
 		board.fiftyMove = 0;
 	}
 
-	Sqr kingPos = board.side == WHITE ? board.pieces[wK][0] : board.pieces[bK][0];
+	Sqr kingPos = board.side == WHITE ? board.pieces[wK][0] : board.pieces[bK][0]; //take position of the king 
 
 	board.enPassant = ENPASS(move);
 	board.side ^= 1;
@@ -754,8 +760,16 @@ bool Game::makeMove(Move move)
 
 	setPositionKey();
 
-	if (attacked(kingPos, board.side) || illegalCastling)
+	if (attacked(kingPos, board.side)) //si le roi est attaqué
 	{
+		//printf("something is bad\n");
+		takeback();
+		return false;
+	}
+
+	if (illegalCastling) //si le castle est illegal
+	{
+		//printf("something is bad\n");
 		takeback();
 		return false;
 	}
@@ -941,6 +955,17 @@ void Game::clearPv(board::Game& game)
         game.getBoard().pv[i].m = 0;
         game.getBoard().pv[i].s = 0;
     }
+}
+
+
+
+std::string Game::getHistoPos_stockfish() {
+	return histoPos_stockfish;
+}
+
+void Game::addToHistoPos_stockfish(std::string pos)
+{
+	histoPos_stockfish += pos + " ";
 }
 
 } // namespace board
