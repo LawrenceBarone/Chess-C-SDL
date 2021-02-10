@@ -45,9 +45,14 @@ public:
 	void assetBoard();
 	Board& getBoard() { return board; }
 	Sqr startEnpassant = 0;
+	
+	std::string getHistoPos_stockfish();
+	void addToHistoPos_stockfish(std::string pos);
 private:
 	Board board;
 	int MvvLvaScores[13][13];
+	
+	std::string histoPos_stockfish;
 };
 
 }

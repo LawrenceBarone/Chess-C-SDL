@@ -34,13 +34,16 @@ public:
     ~Gui();
     void init();
     void run();
-    void update();
+    void playerCanPlay();
+    void update_AI();
     void render();
     void initBoard();
     void initSurface();
     void initPieces();
     bool castleMove(Move move);
     void moveAI();
+    void lawrenceMove(Move* AImove);
+    void stockfishMove(Move* AImove);
     void clearPieces();
     void handleInput();
     void handleKeyDown(const SDL_Event& e);

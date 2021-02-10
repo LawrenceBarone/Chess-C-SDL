@@ -6,6 +6,8 @@
 #include <algorithm>
 
 #include "utils.hpp"
+#include "Connector.hpp"
+#include "global.hpp"
 
 extern void search(board::Game& game);
 
@@ -15,6 +17,13 @@ using namespace defs;
 
 constexpr int SCREEN_SIZE = 600;
 static volatile bool aiThinking = false;
+
+AIChoice aiChoice = defs::STOCKFISH;
+std::string skill_lvl = "0";
+
+bool iaCantPlay = false;
+bool hasVerify_player_canMove = false;
+bool hasVerify_ia_canMove = false;
 
 static int aiThreadSeach(void* data)
 {
@@ -62,6 +71,7 @@ Gui::Gui()
     }
 }
 
+//Read png 
 void Gui::initSurface()
 {
 	//initialise all images
@@ -69,6 +79,7 @@ void Gui::initSurface()
     tileSurface[1] = IMG_Load("imgs/blackSqr.png");
     tileSurface[2] = IMG_Load("imgs/lastmovelight.png");
     tileSurface[3] = IMG_Load("imgs/lastmovedark.png");
+    //ajout tile pour clic droit (montrer un move)
 
     pieceSurface[0] = IMG_Load("imgs/wP.png");
     pieceSurface[1] = IMG_Load("imgs/wN.png");
@@ -152,6 +163,11 @@ void Gui::initPieces()
 
 void Gui::init()
 {
+    aiChoice = GlobalStruct.bAIChoice;
+    skill_lvl = GlobalStruct.eloChoice;
+
+    std::cout << "iachoice : " << aiChoice << ", skill_lvl=" << skill_lvl << std::endl;
+
     SDL_Init(SDL_INIT_EVERYTHING);
 
 	//text init
@@ -189,23 +205,45 @@ void Gui::init()
 	}*/
 }
 
+//Launch General User interface
 void Gui::run()
 {
     init();
+
+    ConnectToEngine("stockfish.exe", skill_lvl);
+
     running = true;
 
     while (running)
     {
         handleInput();
-        update();
+        update_AI();
         render();
 
         SDL_Delay(10);
     }
+
+    CloseConnection(); // close stockfish
 }
 
 void Gui::handleInput()
 {
+    if (!hasVerify_player_canMove) {
+        hasVerify_player_canMove = true;
+        
+        switch (checkMate(game.getHistoPos_stockfish()))
+        {
+        case CHECKMATE:
+            std::cout << "player checkmate" << std::endl;
+            break;
+        case STALEMATE:
+            std::cout << "player stalemate" << std::endl;
+            break;
+        default:
+            break;
+        }
+    }
+
     SDL_Event e;
 
     if (SDL_PollEvent(&e))
@@ -269,6 +307,11 @@ void Gui::handleKeyDown(const SDL_Event& e)
         {
 			//s for switch side
             switchSide();
+        }
+        case SDLK_p:
+        {
+            //active stockfish
+
         }
     }
 }
@@ -393,9 +436,23 @@ void Gui::movePiece(const SDL_Event& e) //when player move a piece
 					//printf("move\n");
 					updatePieceLocation(move, i);
 					//two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode ||
-					//if(twoplayer){
-					//switchSide();
-					//}
+					/*if(twoplayer){
+					switchSide();
+					}*/
+
+
+                    //store move into histoPosition_stockfish
+                    std::string fromPos = "";
+                    std::string toPos = "";
+                    for (int i = 0; i < 64; i++) {
+                        if (mailbox64[i] == pieceMovingInfo.from)
+                            fromPos = sqrChar[i];
+                        if (mailbox64[i] == pieceMovingInfo.to)
+                            toPos = sqrChar[i];
+                    }
+                    game.addToHistoPos_stockfish(fromPos + toPos);
+
+                    hasVerify_ia_canMove = false;
 				}
 				else {
 					pieceMovingInfo.tile->alignPiece();
@@ -436,6 +493,7 @@ void Gui::updatePieceLocation(const Move& move, const int i)
 
     if (!castleMove(move))
     {
+        tiles[i].setPiece(pieceMovingInfo.pieceMoving);
         tiles[i].setPiece(pieceMovingInfo.pieceMoving);
         tiles[i].alignPiece();
         pieceMovingInfo.pieceMoving = NULL;
@@ -521,7 +579,28 @@ void Gui::handlePromoteMove()
         tiles[mailbox[pieceMovingInfo.to]].alignPiece();
 
         tiles[mailbox[pieceMovingInfo.to]].promote(PROMOTE(move), pieceSurface[(PROMOTE(move))-1]);
-    }
+
+        //add to histoPosition for stockfish
+        std::string fromPos = "";
+        std::string toPos = "";
+        std::string promoteSign = "";
+
+        for (int i = 0; i < 64; i++) {
+            if (mailbox64[i] == pieceMovingInfo.from)
+                fromPos = sqrChar[i];
+            if (mailbox64[i] == pieceMovingInfo.to)
+                toPos = sqrChar[i];
+        }
+        //precise what figure
+        if (p - promotePieceIndex == bQ || p - promotePieceIndex == wQ)     promoteSign = "q";
+        if (p - promotePieceIndex == bR || p - promotePieceIndex == wR)     promoteSign = "r";
+        if (p - promotePieceIndex == bB || p - promotePieceIndex == wB)     promoteSign = "b";
+        if (p - promotePieceIndex == bN || p - promotePieceIndex == wN)     promoteSign = "n";
+
+        game.addToHistoPos_stockfish(fromPos + toPos + promoteSign);
+
+        hasVerify_ia_canMove = false;
+    }   
 
     pieceMovingInfo.pieceMoving = NULL;
     pieceMovingInfo.tile = NULL;
@@ -537,8 +616,9 @@ void Gui::handlePromoteMove()
 
 	//two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode ||
 	//if(twoplayer){
-	//switchSide();
+	//  switchSide();
 	//}
+
 }
 
 void Gui::setLastMovePos(int from, int to)
@@ -568,6 +648,88 @@ void Gui::handleMouseMotion(const SDL_Event& e)
 
 void Gui::moveAI()
 {
+    switch (checkMate(game.getHistoPos_stockfish()))
+    {
+    case CHECKMATE:
+        std::cout << "ia checkmate" << std::endl;
+        break;
+    case STALEMATE:
+        std::cout << "ia stalemate" << std::endl;
+        break;
+    default:
+        break;
+    }
+
+    Move AImove = 0;
+
+    switch (aiChoice)
+    {
+    case defs::STOCKFISH:
+
+        stockfishMove(&AImove);
+
+        std::cout << game.getHistoPos_stockfish() << std::endl;
+
+        break;
+    case defs::LAWRENCE:
+
+        lawrenceMove(&AImove);
+        break;
+    default:
+
+        lawrenceMove(&AImove);
+        break;
+    }
+
+    if (iaCantPlay) // IA have lost
+    {
+        std::cout << "AI checkMate" << std::endl;
+    }
+    
+    if (AImove == 0) {
+        std::cout << "error ai move = 0" << std::endl;
+    }        
+    else {
+        game.makeMove(AImove);
+
+        if (ISCAP(AImove))
+        {
+            if (ENPASSCAP(AImove))
+            {
+                delete tiles[mailbox[ENPASSCAP(AImove)]].getPiece();
+                tiles[mailbox[ENPASSCAP(AImove)]].setPiece(NULL);
+            }
+            else
+            {
+                delete tiles[mailbox[TO(AImove)]].getPiece();
+                tiles[mailbox[TO(AImove)]].setPiece(NULL);
+            }
+        }
+
+        setLastMovePos(FROM(AImove), TO(AImove));
+
+        if (!castleMove(AImove))
+        {
+            tiles[mailbox[TO(AImove)]].setPiece(tiles[mailbox[FROM(AImove)]].getPiece());
+            tiles[mailbox[FROM(AImove)]].setPiece(NULL);
+            tiles[mailbox[TO(AImove)]].alignPiece();
+
+            if (PROMOTE(AImove))
+            {
+                tiles[mailbox[TO(AImove)]].promote(PROMOTE(AImove), pieceSurface[(PROMOTE(AImove)) - 1]);
+            }
+        }
+
+        game.getBoard().moves.clear();
+        game.generateMove(false);
+        aiThinking = false;
+
+        hasVerify_player_canMove = false;
+    }
+}
+
+void Gui::lawrenceMove(Move* AImove) {
+
     search(game);
 
     if (game.getBoard().pv[0].m == 0)
@@ -576,41 +738,68 @@ void Gui::moveAI()
         return;
     }
 
-    Move AImove = game.getBoard().pv[0].m;
+    *AImove = game.getBoard().pv[0].m;
 
-    game.makeMove(AImove);
-
-    if (ISCAP(AImove))
-    {
-        if (ENPASSCAP(AImove))
-        {
-            delete tiles[mailbox[ENPASSCAP(AImove)]].getPiece();
-            tiles[mailbox[ENPASSCAP(AImove)]].setPiece(NULL);
-        }
-        else
-        {
-            delete tiles[mailbox[TO(AImove)]].getPiece();
-            tiles[mailbox[TO(AImove)]].setPiece(NULL);
-        }
+    //store move into histoPosition_stockfish
+    std::string fromPos = "";
+    std::string toPos = "";
+    for (int i = 0; i < 64; i++) {
+        if (mailbox64[i] == FROM(*AImove))
+            fromPos = sqrChar[i];
+        if (mailbox64[i] == TO(*AImove))
+            toPos = sqrChar[i];
+        // /!\ add contition for promote parameter ::todo
     }
+    game.addToHistoPos_stockfish(fromPos + toPos);
 
-    setLastMovePos(FROM(AImove), TO(AImove));
+}
 
-    if (!castleMove(AImove))
+void Gui::stockfishMove(Move* AImove) {
+    std::string str_move = getNextMove(game.getHistoPos_stockfish());
+
+    if (str_move != "(none")
     {
-        tiles[mailbox[TO(AImove)]].setPiece(tiles[mailbox[FROM(AImove)]].getPiece());
-        tiles[mailbox[FROM(AImove)]].setPiece(NULL);
-        tiles[mailbox[TO(AImove)]].alignPiece();
+        game.addToHistoPos_stockfish(str_move);
 
-        if (PROMOTE(AImove))
-        {
-            tiles[mailbox[TO(AImove)]].promote(PROMOTE(AImove), pieceSurface[(PROMOTE(AImove))-1]);
+        std::string oldPos_str = { str_move[0], str_move[1] };
+        std::string newPos_str = { str_move[2], str_move[3] };
+        std::string promote = { str_move[4] };
+
+        pieceMovingInfo.from = -1;
+        pieceMovingInfo.to = -1;
+
+        int i = 0;
+        for (i; i < 64; i++) {
+            if (sqrChar[i] == oldPos_str)
+                pieceMovingInfo.from = mailbox64[i];
+            if (sqrChar[i] == newPos_str)
+                pieceMovingInfo.to = mailbox64[i];
         }
-    }
 
-    game.getBoard().moves.clear();
-    game.generateMove(false);
-    aiThinking = false;
+        moveFromTo(*AImove, pieceMovingInfo.from, pieceMovingInfo.to);
+        
+        //promote pawn
+        if (promote != " ") {
+            Piece piece;
+            if (AI == WHITE) {
+                if (promote == "q")
+                    piece = wQ;
+                if (promote == "n")
+                    piece = wN;
+            }
+            else {
+                if (promote == "q")
+                    piece = bQ;
+                if (promote == "n")
+                    piece = bN;
+            }
+            addPromoteBits(*AImove, piece);
+        }
+        
+        *AImove = utils::parseMove(*AImove, game);
+    }
+    else
+        iaCantPlay = true;
 }
 
 bool Gui::castleMove(Move move)
@@ -671,11 +860,12 @@ bool Gui::castleMove(Move move)
     return false;
 }
 
-void Gui::update()
+void Gui::update_AI()
 {
     if (!promoting && game.getBoard().side == AI && !aiThinking)
     {
         aiThinking = true;
+
         SDL_CreateThread(aiThreadSeach, "AIMoveThread", threadData);
     }
 }
