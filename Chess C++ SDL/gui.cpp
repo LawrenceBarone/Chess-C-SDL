@@ -16,7 +16,10 @@ constexpr int SCREEN_SIZE = 600;
 static volatile bool aiThinking = false;
 
 AIChoice aiChoice = defs::STOCKFISH;
-std::string elo = "668";
+std::string skill_lvl = "0";
+
+bool isCheckMate = false;
+bool has_verifyIfPlayerCanMove = false;
 
 static int aiThreadSeach(void* data)
 {
@@ -173,7 +176,7 @@ void Gui::run()
     init();
 
     if (aiChoice == STOCKFISH) 
-        ConnectToEngine("stockfish.exe", elo);
+        ConnectToEngine("stockfish.exe", skill_lvl);
 
     running = true;
 
@@ -191,6 +194,15 @@ void Gui::run()
 
 void Gui::handleInput()
 {
+    if (!has_verifyIfPlayerCanMove ) {
+        has_verifyIfPlayerCanMove = true;
+
+        if (getNextMove(game.getHistoPos_stockfish()) == "(none") {
+            isCheckMate = true;
+            std::cout << "player checkmate" << std::endl;
+        }
+    }
+
     SDL_Event e;
 
     if (SDL_PollEvent(&e))
@@ -254,6 +266,11 @@ void Gui::handleKeyDown(const SDL_Event& e)
         {
 			//s for switch side
             switchSide();
+        }
+        case SDLK_p:
+        {
+            //active stockfish
+
         }
     }
 }
@@ -372,10 +389,17 @@ void Gui::movePiece(const SDL_Event& e) //when player move a piece
 
             if (move != 0)
             {
-                updatePieceLocation(move, i);
+				//printf("maybe\n");
+				if (game.makeMove(move)) {
+					//printf("move\n");
+					updatePieceLocation(move, i);
+					//two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode ||
+					/*if(twoplayer){
+					switchSide();
+					}*/
 
-                if (aiChoice == defs::STOCKFISH) {
 
+                    //store move into histoPosition_stockfish
                     std::string fromPos = "";
                     std::string toPos = "";
                     for (int i = 0; i < 64; i++) {
@@ -385,15 +409,6 @@ void Gui::movePiece(const SDL_Event& e) //when player move a piece
                             toPos = sqrChar[i];
                     }
                     game.addToHistoPos_stockfish(fromPos + toPos);
-                }
-				//printf("maybe\n");
-				if (game.makeMove(move)) {
-					//printf("move\n");
-					updatePieceLocation(move, i);
-					//two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode ||
-					//if(twoplayer){
-					//switchSide();
-					//}
 				}
 				else {
 					pieceMovingInfo.tile->alignPiece();
@@ -520,7 +535,26 @@ void Gui::handlePromoteMove()
         tiles[mailbox[pieceMovingInfo.to]].alignPiece();
 
         tiles[mailbox[pieceMovingInfo.to]].promote(PROMOTE(move), pieceSurface[(PROMOTE(move))-1]);
-    }
+
+        //add to histoPosition for stockfish
+        std::string fromPos = "";
+        std::string toPos = "";
+        std::string promoteSign = "";
+
+        for (int i = 0; i < 64; i++) {
+            if (mailbox64[i] == pieceMovingInfo.from)
+                fromPos = sqrChar[i];
+            if (mailbox64[i] == pieceMovingInfo.to)
+                toPos = sqrChar[i];
+        }
+        //precise what figure
+        if (p - promotePieceIndex == bQ || p - promotePieceIndex == wQ)     promoteSign = "q";
+        if (p - promotePieceIndex == bR || p - promotePieceIndex == wR)     promoteSign = "r";
+        if (p - promotePieceIndex == bB || p - promotePieceIndex == wB)     promoteSign = "b";
+        if (p - promotePieceIndex == bN || p - promotePieceIndex == wN)     promoteSign = "n";
+
+        game.addToHistoPos_stockfish(fromPos + toPos + promoteSign);
+    }   
 
     pieceMovingInfo.pieceMoving = NULL;
     pieceMovingInfo.tile = NULL;
@@ -536,8 +570,9 @@ void Gui::handlePromoteMove()
 
 	//two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode ||
 	//if(twoplayer){
-	//switchSide();
+	//  switchSide();
 	//}
+
 }
 
 void Gui::setLastMovePos(int from, int to)
@@ -588,43 +623,50 @@ void Gui::moveAI()
         break;
     }
 
-    if (AImove == 0)
+    if (isCheckMate) // IA have lost
+    {
+        std::cout << "AI checkMate" << std::endl;
+    }
+    else if (AImove == 0) {
         std::cout << "error ai move = 0" << std::endl;
+    }        
+    else {
+        game.makeMove(AImove);
 
-    game.makeMove(AImove);
-
-
-    if (ISCAP(AImove))
-    {
-        if (ENPASSCAP(AImove))
+        if (ISCAP(AImove))
         {
-            delete tiles[mailbox[ENPASSCAP(AImove)]].getPiece();
-            tiles[mailbox[ENPASSCAP(AImove)]].setPiece(NULL);
+            if (ENPASSCAP(AImove))
+            {
+                delete tiles[mailbox[ENPASSCAP(AImove)]].getPiece();
+                tiles[mailbox[ENPASSCAP(AImove)]].setPiece(NULL);
+            }
+            else
+            {
+                delete tiles[mailbox[TO(AImove)]].getPiece();
+                tiles[mailbox[TO(AImove)]].setPiece(NULL);
+            }
         }
-        else
+
+        setLastMovePos(FROM(AImove), TO(AImove));
+
+        if (!castleMove(AImove))
         {
-            delete tiles[mailbox[TO(AImove)]].getPiece();
-            tiles[mailbox[TO(AImove)]].setPiece(NULL);
+            tiles[mailbox[TO(AImove)]].setPiece(tiles[mailbox[FROM(AImove)]].getPiece());
+            tiles[mailbox[FROM(AImove)]].setPiece(NULL);
+            tiles[mailbox[TO(AImove)]].alignPiece();
+
+            if (PROMOTE(AImove))
+            {
+                tiles[mailbox[TO(AImove)]].promote(PROMOTE(AImove), pieceSurface[(PROMOTE(AImove)) - 1]);
+            }
         }
+
+        game.getBoard().moves.clear();
+        game.generateMove(false);
+        aiThinking = false;
+
+        has_verifyIfPlayerCanMove = false;
     }
-
-    setLastMovePos(FROM(AImove), TO(AImove));
-
-    if (!castleMove(AImove))
-    {
-        tiles[mailbox[TO(AImove)]].setPiece(tiles[mailbox[FROM(AImove)]].getPiece());
-        tiles[mailbox[FROM(AImove)]].setPiece(NULL);
-        tiles[mailbox[TO(AImove)]].alignPiece();
-
-        if (PROMOTE(AImove))
-        {
-            tiles[mailbox[TO(AImove)]].promote(PROMOTE(AImove), pieceSurface[(PROMOTE(AImove)) - 1]);
-        }
-    }
-
-    game.getBoard().moves.clear();
-    game.generateMove(false);
-    aiThinking = false;
 }
 
 void Gui::lawrenceMove(Move* AImove) {
@@ -638,12 +680,25 @@ void Gui::lawrenceMove(Move* AImove) {
     }
 
     *AImove = game.getBoard().pv[0].m;
+
+    //store move into histoPosition_stockfish
+    std::string fromPos = "";
+    std::string toPos = "";
+    for (int i = 0; i < 64; i++) {
+        if (mailbox64[i] == FROM(*AImove))
+            fromPos = sqrChar[i];
+        if (mailbox64[i] == TO(*AImove))
+            toPos = sqrChar[i];
+        // /!\ add contition for promote parameter ::todo
+    }
+    game.addToHistoPos_stockfish(fromPos + toPos);
+
 }
 
 void Gui::stockfishMove(Move* AImove) {
     std::string str_move = getNextMove(game.getHistoPos_stockfish());
 
-    if (str_move != "(non")
+    if (str_move != "(none")
     {
         game.addToHistoPos_stockfish(str_move);
 
@@ -663,9 +718,29 @@ void Gui::stockfishMove(Move* AImove) {
         }
 
         moveFromTo(*AImove, pieceMovingInfo.from, pieceMovingInfo.to);
-
+        
+        //promote pawn
+        if (promote != " ") {
+            Piece piece;
+            if (AI == WHITE) {
+                if (promote == "q")
+                    piece = wQ;
+                if (promote == "n")
+                    piece = wN;
+            }
+            else {
+                if (promote == "q")
+                    piece = bQ;
+                if (promote == "n")
+                    piece = bN;
+            }
+            addPromoteBits(*AImove, piece);
+        }
+        
         *AImove = utils::parseMove(*AImove, game);
     }
+    else
+        isCheckMate = true;
 }
 
 bool Gui::castleMove(Move move)
@@ -731,18 +806,6 @@ void Gui::update_AI()
     if (!promoting && game.getBoard().side == AI && !aiThinking)
     {
         aiThinking = true;
-
-        /*
-        * Print moves history
-        std::string moves = "";
-        for (Move move : game.getBoard().moveHistory) {
-            std::ostringstream o;
-            o << move;
-            moves += o.str() + " " ;
-        }           
-
-        std::cout << moves << std::endl;
-        */
 
         SDL_CreateThread(aiThreadSeach, "AIMoveThread", threadData);
     }

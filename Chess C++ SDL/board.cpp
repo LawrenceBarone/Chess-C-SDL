@@ -767,7 +767,7 @@ bool Game::makeMove(Move move)
 		return false;
 	}
 
-	if (illegalCastling) //si le move est illegal ?
+	if (illegalCastling) //si le castle est illegal
 	{
 		//printf("something is bad\n");
 		takeback();

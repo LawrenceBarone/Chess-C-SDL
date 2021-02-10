@@ -64,6 +64,12 @@ static enum AIChoice : int {
 	LAWRENCE
 };
 
+static enum GameStatus : int {
+	RUNNING,
+	P1_WIN,
+	P2_WIN
+};
+
 static std::string sqrChar[]
 {
 	"a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1",

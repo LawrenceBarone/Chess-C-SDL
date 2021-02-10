@@ -14,6 +14,8 @@ const int SCREEN_HEIGHT = 480;
 
 Mix_Music* music;
 
+bool soundOn = false;
+
 #ifndef GUI
 extern void search(board::Game& game);
 
@@ -144,7 +146,8 @@ int main(int argc, char* args[])
 	}
 
 	// Play music forever
-	Mix_PlayMusic(music, -1);
+	if(soundOn)
+		Mix_PlayMusic(music, -1);
 
 	/*bool btnG = false;
 	bool quit = false;
