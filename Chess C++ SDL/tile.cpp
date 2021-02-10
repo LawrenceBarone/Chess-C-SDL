@@ -21,6 +21,11 @@ void Tile::initTexture(SDL_Surface* tileSurface[])
         texture = SDL_CreateTextureFromSurface(renderer, tileSurface[1]);
 }
 
+void Tile::destroyTexture()
+{
+	SDL_DestroyTexture(texture);
+}
+
 bool Tile::isWhite()
 {
     return colorWhite;

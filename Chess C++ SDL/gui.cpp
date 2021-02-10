@@ -1,6 +1,8 @@
 #include "gui.hpp"
 
 #include <SDL_image.h>
+#include <SDL_ttf.h>
+#include <string>
 #include <algorithm>
 
 #include "utils.hpp"
@@ -81,6 +83,28 @@ void Gui::initSurface()
     pieceSurface[10] = IMG_Load("imgs/bQ.png");
     pieceSurface[11] = IMG_Load("imgs/bK.png");
 
+	//textSurface 	//font || font || font || font || font || font ||
+
+	SDL_Color textColor = { 0, 0, 0 };
+	font = TTF_OpenFont("font/arial.ttf", 100);
+
+	textSurface[0] = TTF_RenderText_Solid(font, "1A", textColor);
+	textSurface[1] = TTF_RenderText_Solid(font, "2", textColor);
+	textSurface[2] = TTF_RenderText_Solid(font, "3", textColor);
+	textSurface[3] = TTF_RenderText_Solid(font, "4", textColor);
+	textSurface[4] = TTF_RenderText_Solid(font, "5", textColor);
+	textSurface[5] = TTF_RenderText_Solid(font, "6", textColor);
+	textSurface[6] = TTF_RenderText_Solid(font, "7", textColor);
+	textSurface[7] = TTF_RenderText_Solid(font, "8", textColor);
+
+	textSurface[8] = TTF_RenderText_Solid(font, "B", textColor);
+	textSurface[9] = TTF_RenderText_Solid(font, "C", textColor);
+	textSurface[10] = TTF_RenderText_Solid(font, "D", textColor);
+	textSurface[11] = TTF_RenderText_Solid(font, "E", textColor);
+	textSurface[12] = TTF_RenderText_Solid(font, "F", textColor);
+	textSurface[13] = TTF_RenderText_Solid(font, "G", textColor);
+	textSurface[14] = TTF_RenderText_Solid(font, "H", textColor);
+
     promoteSqrSurface = IMG_Load("imgs/promoteSqr.png");
     promoteTexture = SDL_CreateTextureFromSurface(renderer, promoteSqrSurface);
     lastmoveTextureLight = SDL_CreateTextureFromSurface(renderer, tileSurface[2]);
@@ -94,7 +118,7 @@ void Gui::initBoard()
 {
     bool isWhite = false;
     int tileSize = SCREEN_SIZE / 8;
-
+	
     for(Sqr rank=RANK_8; rank>=RANK_1; --rank)
     {
         for(Sqr file=FILE_A; file<=FILE_H; ++file)
@@ -129,6 +153,10 @@ void Gui::initPieces()
 void Gui::init()
 {
     SDL_Init(SDL_INIT_EVERYTHING);
+
+	//text init
+	TTF_Init();
+
     initSurface();
 
     for (int i = 0; i < 2; ++i)
@@ -280,6 +308,7 @@ void Gui::switchSide()
     }
     for (int i=0; i<tiles.size(); i++)
     {
+		//tiles[i].destroyTexture(); ////////////////////////////////////////////////////////////
         tiles[i].initTexture(tileSurface);
     }
     lastMoveChecker = false;
@@ -656,6 +685,7 @@ void Gui::render()
     if (aiThinking) return;
 
     SDL_RenderClear(renderer);
+	const int size = SCREEN_SIZE / 8;
 
     for (int i=0; i<tiles.size(); i++)
     {
@@ -681,10 +711,52 @@ void Gui::render()
         pieceMovingInfo.pieceMoving->render();
     }
 
+	//boucle pour render le texte des coordonée
+	SDL_Rect rect;
+	rect.w = size / 5;
+	rect.h = size / 5;
+
+	for (int i = 0; i < 8; i++)
+	{
+		textTexture = SDL_CreateTextureFromSurface(renderer, textSurface[i]);
+
+		//coordonée
+		rect.x = i*size;
+		rect.y = size*7;
+
+		if (i == 0) {
+			rect.w *= 2;
+		}
+		else
+		{
+			rect.w = size / 5;
+		}
+
+		//afficher
+		SDL_RenderCopy(renderer, textTexture, 0, &rect);
+
+		//libérer
+		SDL_DestroyTexture(textTexture);
+	}
+
+	for (int i = 8; i < 15; i++)
+	{
+		textTexture = SDL_CreateTextureFromSurface(renderer, textSurface[i]);
+
+		//coordonée
+		rect.x = 0;
+		rect.y = size*(6 - (i-8));
+
+		//afficher
+		SDL_RenderCopy(renderer, textTexture, 0, &rect);
+
+		//libérer
+		SDL_DestroyTexture(textTexture);
+	}
+
+
     if (promoting)
     {
-        const int size = SCREEN_SIZE / 8;
-
         for (int i=0; i<4; i++)
         {
             promoteToPieces[i].w = size;
@@ -735,11 +807,20 @@ Gui::~Gui()
         SDL_FreeSurface(pieceSurface[i]);
     }
 
+	for (int i = 0; i < 15; i++) {
+		SDL_FreeSurface(textSurface[i]);
+	}
+
     SDL_FreeSurface(promoteSqrSurface);
     SDL_DestroyTexture(promoteTexture);
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+
+	//text close
+	TTF_CloseFont(font);
+	TTF_Quit();
+
     SDL_Quit();
 }
 

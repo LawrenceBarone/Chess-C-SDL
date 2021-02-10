@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <vector>
+#include <SDL_ttf.h>
 #include "tile.hpp"
 #include "piece.hpp"
 #include "board.hpp"
@@ -53,12 +54,14 @@ public:
     void checkPromotionMove();
     void updatePieceLocation(const Move& move, const int i);
 	Sqr AI = defs::BLACK;
+	TTF_Font* font = NULL;
 
 private:
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
     std::vector<Tile> tiles {};
     SDL_Surface* tileSurface[4];
+	SDL_Surface* textSurface[15];
     SDL_Surface* pieceSurface[12];
     PieceMoving pieceMovingInfo {};
     board::Game game {};
@@ -66,6 +69,7 @@ private:
     SDL_Rect promoteToPieces[4];
     SDL_Surface* promoteSqrSurface = NULL;
     SDL_Texture* promoteTexture = NULL;
+	SDL_Texture* textTexture = NULL;
     SDL_Texture* lastmoveTextureLight = NULL;
     SDL_Texture* lastmoveTextureDark = NULL;
     int promotePieceIndex = -1;
