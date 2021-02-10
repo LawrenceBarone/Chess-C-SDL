@@ -1,10 +1,16 @@
 #define GUI
+#define DEFS
 #include "global.hpp"
 #include <SDL.h>
 #include <SDL_mixer.h>
 #include <stdio.h>
 #include <string>
 #include "multiple_windows.hpp"
+#ifdef DEFS
+	#include "defs.hpp"
+#endif // DEFS
+
+
 
 #ifdef GUI
 #include "gui.hpp"
@@ -16,6 +22,7 @@
 
 #define SDL_MAIN_HANDLED
 #include "SDL.h"
+#include <SDL_ttf.h>
 
 Mix_Music* music;
 
@@ -182,15 +189,15 @@ int main(int argc, char* argv[])
 	if(soundOn)
 		Mix_PlayMusic(music, -1);
 
-	/*bool btnG = false;
+	bool btnG = false;
 	bool quit = false;
 	SDL_Event e;
 
 	GlobalStruct.wChoice = "h";
 	GlobalStruct.bChoice = "ia";
-	GlobalStruct.wAIChoice = "";
-	GlobalStruct.bAIChoice = "stockfish";
-	GlobalStruct.eloChoice = "1200";
+	GlobalStruct.wAIChoice = defs::AIChoice::NONE;
+	GlobalStruct.bAIChoice = defs::AIChoice::LAWRENCE;
+	GlobalStruct.eloChoice = "0";
 	GlobalStruct.time = "";
 	GlobalStruct.ModedGame = "";
 
@@ -418,7 +425,8 @@ int main(int argc, char* argv[])
 					if (count < 3200) {
 						count += 100;
 						sprintf_s(elo, "%d", count);
-						GlobalStruct.eloChoice = count;
+						GlobalStruct.eloChoice = std::to_string((count - 1200) / 100);
+						std::cout << GlobalStruct.eloChoice << std::endl;
 						sEloStockfish = TTF_RenderText_Solid(sans, elo, white);
 						tEloStockfish = SDL_CreateTextureFromSurface(renderer, sEloStockfish);
 					}
@@ -428,7 +436,8 @@ int main(int argc, char* argv[])
 					if (count > 1200) {
 						count -= 100;
 						sprintf_s(elo, "%d", count);
-						GlobalStruct.eloChoice = count;
+						GlobalStruct.eloChoice = std::to_string((count - 1200) /100);
+						std::cout << GlobalStruct.eloChoice << std::endl;
 						sEloStockfish = TTF_RenderText_Solid(sans, elo, white);
 						tEloStockfish = SDL_CreateTextureFromSurface(renderer, sEloStockfish);
 					}
@@ -490,7 +499,6 @@ int main(int argc, char* argv[])
 	runChess();
 	return 0;
 }
-
 
 
 

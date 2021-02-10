@@ -41,17 +41,10 @@ void ConnectToEngine(const char* path, std::string value)
 
    CreateProcess(NULL, path_w, NULL, NULL, TRUE,0, NULL, NULL, &sti, &pi);
 
-   std::string init = "uci\n"; 
+   std::string init = "uci\nsetoption name Skill Level value " + value + "\nucinewgame\n";
    WriteFile(pipin_w, init.c_str(), init.length(), &writ, NULL);
-   Sleep(500);
+   Sleep(100);
    
-   init = "setoption name Skill Level value " + value + "\n";
-   WriteFile(pipin_w, init.c_str(), init.length(), &writ, NULL);
-   Sleep(500);
-   
-   init = "ucinewgame\n";
-   WriteFile(pipin_w, init.c_str(), init.length(), &writ, NULL);
-   Sleep(500);
 
    PeekNamedPipe(pipout_r, buffer, sizeof(buffer), &read, &available, NULL);
    do
@@ -66,37 +59,71 @@ void ConnectToEngine(const char* path, std::string value)
 
 std::string getNextMove(std::string position)
 {     
-    std::string str;
-    position = "position startpos moves "+position+"\ngo depth 5\n";
+    std::string output;
+    std::string input = "position startpos moves "+position+"\ngo depth 5\n";
 
-    WriteFile(pipin_w, position.c_str(), position.length(),&writ, NULL);
-    Sleep(500);
+    WriteFile(pipin_w, input.c_str(), input.length(),&writ, NULL);
+    Sleep(100);
         
     PeekNamedPipe(pipout_r, buffer,sizeof(buffer), &read, &available, NULL);   
     int n;
     do
     {   
-        std::cout << buffer << std::endl;
         ZeroMemory(buffer, sizeof(buffer));
         if(!ReadFile(pipout_r, buffer, sizeof(buffer), &read, NULL) || !read) break; 
         if (read == 2048) break;
         buffer[read] = 0;    
-        str+=(char*)buffer;
+        output+=(char*)buffer;
     }
     while(read >= sizeof(buffer));
 
-    n = str.find("bestmove");
-    if (n!=-1) return str.substr(n+9,5);
+    n = output.find("bestmove");
+    if (n!=-1) return output.substr(n+9,5);
     
     //if bestmove not found
-    if (str == "") {
-        str += (char*)buffer;
+    if (output == "") {
+        output += (char*)buffer;
     }
-    n = str.find(" pv ");
-    if(n != -1) return str.substr(n + 4, 5);
+    n = output.find(" pv ");
+    if(n != -1) return output.substr(n + 4, 5);
 
     //default value to stop de game
     return "(none";
+}
+
+defs::Status checkMate(std::string position)
+{
+    defs::Status output = defs::NONECHECK;
+    std::string result;
+    std::string input = "position startpos moves " + position + "\nd\n";
+
+    WriteFile(pipin_w, input.c_str(), input.length(), &writ, NULL);
+    Sleep(100);
+
+    PeekNamedPipe(pipout_r, buffer, sizeof(buffer), &read, &available, NULL);
+    int n;
+    do
+    {
+        ZeroMemory(buffer, sizeof(buffer));
+        if (!ReadFile(pipout_r, buffer, sizeof(buffer), &read, NULL) || !read) break;
+        if (read == 2048) break;
+        buffer[read] = 0;
+        result += (char*)buffer;
+    } while (read >= sizeof(buffer));
+
+    n = result.find("Checkers: ");
+    if (result[n + 10] != '\r')
+        output = CHECK;
+    
+    n = result.find("Legal moves:");
+    if (result[n + 13] == '\r') {
+        if (output == CHECK)
+            output = CHECKMATE;
+        else
+            output = STALEMATE;
+    }
+
+    return output;
 }
 
 

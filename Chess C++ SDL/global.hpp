@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include "defs.hpp"
 using namespace std;
 
 
@@ -10,8 +11,8 @@ typedef struct mdata_struct
 {
     string wChoice;
     string bChoice;
-    string wAIChoice;
-    string bAIChoice;
+    defs::AIChoice wAIChoice;
+    defs::AIChoice bAIChoice;
     string eloChoice;
     string time;
     string ModedGame;

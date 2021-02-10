@@ -5,6 +5,7 @@
 
 #include "utils.hpp"
 #include "Connector.hpp"
+#include "global.hpp"
 
 extern void search(board::Game& game);
 
@@ -18,8 +19,9 @@ static volatile bool aiThinking = false;
 AIChoice aiChoice = defs::STOCKFISH;
 std::string skill_lvl = "0";
 
-bool isCheckMate = false;
-bool has_verifyIfPlayerCanMove = false;
+bool iaCantPlay = false;
+bool hasVerify_player_canMove = false;
+bool hasVerify_ia_canMove = false;
 
 static int aiThreadSeach(void* data)
 {
@@ -137,6 +139,11 @@ void Gui::initPieces()
 
 void Gui::init()
 {
+    aiChoice = GlobalStruct.bAIChoice;
+    skill_lvl = GlobalStruct.eloChoice;
+
+    std::cout << "iachoice : " << aiChoice << ", skill_lvl=" << skill_lvl << std::endl;
+
     SDL_Init(SDL_INIT_EVERYTHING);
     initSurface();
 
@@ -175,8 +182,7 @@ void Gui::run()
 {
     init();
 
-    if (aiChoice == STOCKFISH) 
-        ConnectToEngine("stockfish.exe", skill_lvl);
+    ConnectToEngine("stockfish.exe", skill_lvl);
 
     running = true;
 
@@ -194,12 +200,19 @@ void Gui::run()
 
 void Gui::handleInput()
 {
-    if (!has_verifyIfPlayerCanMove ) {
-        has_verifyIfPlayerCanMove = true;
-
-        if (getNextMove(game.getHistoPos_stockfish()) == "(none") {
-            isCheckMate = true;
+    if (!hasVerify_player_canMove) {
+        hasVerify_player_canMove = true;
+        
+        switch (checkMate(game.getHistoPos_stockfish()))
+        {
+        case CHECKMATE:
             std::cout << "player checkmate" << std::endl;
+            break;
+        case STALEMATE:
+            std::cout << "player stalemate" << std::endl;
+            break;
+        default:
+            break;
         }
     }
 
@@ -409,6 +422,8 @@ void Gui::movePiece(const SDL_Event& e) //when player move a piece
                             toPos = sqrChar[i];
                     }
                     game.addToHistoPos_stockfish(fromPos + toPos);
+
+                    hasVerify_ia_canMove = false;
 				}
 				else {
 					pieceMovingInfo.tile->alignPiece();
@@ -554,6 +569,8 @@ void Gui::handlePromoteMove()
         if (p - promotePieceIndex == bN || p - promotePieceIndex == wN)     promoteSign = "n";
 
         game.addToHistoPos_stockfish(fromPos + toPos + promoteSign);
+
+        hasVerify_ia_canMove = false;
     }   
 
     pieceMovingInfo.pieceMoving = NULL;
@@ -602,6 +619,18 @@ void Gui::handleMouseMotion(const SDL_Event& e)
 
 void Gui::moveAI()
 {
+    switch (checkMate(game.getHistoPos_stockfish()))
+    {
+    case CHECKMATE:
+        std::cout << "ia checkmate" << std::endl;
+        break;
+    case STALEMATE:
+        std::cout << "ia stalemate" << std::endl;
+        break;
+    default:
+        break;
+    }
+
     Move AImove = 0;
 
     switch (aiChoice)
@@ -623,11 +652,12 @@ void Gui::moveAI()
         break;
     }
 
-    if (isCheckMate) // IA have lost
+    if (iaCantPlay) // IA have lost
     {
         std::cout << "AI checkMate" << std::endl;
     }
-    else if (AImove == 0) {
+    
+    if (AImove == 0) {
         std::cout << "error ai move = 0" << std::endl;
     }        
     else {
@@ -665,7 +695,7 @@ void Gui::moveAI()
         game.generateMove(false);
         aiThinking = false;
 
-        has_verifyIfPlayerCanMove = false;
+        hasVerify_player_canMove = false;
     }
 }
 
@@ -740,7 +770,7 @@ void Gui::stockfishMove(Move* AImove) {
         *AImove = utils::parseMove(*AImove, game);
     }
     else
-        isCheckMate = true;
+        iaCantPlay = true;
 }
 
 bool Gui::castleMove(Move move)

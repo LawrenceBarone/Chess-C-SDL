@@ -33,6 +33,7 @@ public:
     ~Gui();
     void init();
     void run();
+    void playerCanPlay();
     void update_AI();
     void render();
     void initBoard();
