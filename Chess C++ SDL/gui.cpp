@@ -4,6 +4,7 @@
 #include <algorithm>
 
 #include "utils.hpp"
+#include "global.hpp"
 
 extern void search(board::Game& game);
 
@@ -31,7 +32,7 @@ Gui::Gui()
     }
     else
     {
-        window = SDL_CreateWindow("Ludus Chess", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_SIZE, SCREEN_SIZE, SDL_WINDOW_SHOWN);
+        window = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_SIZE, SCREEN_SIZE, SDL_WINDOW_SHOWN);
 
         if(window == NULL)
         {
