@@ -7,8 +7,8 @@ public:
     Tile(int x, int y, int size, int f, int r, int s, bool isW, SDL_Renderer *ren);
     ~Tile();
     void render();
-    void initTexture(SDL_Surface* tileSurface[]);
-	void destroyTexture();
+    void initTexture(SDL_Surface* tileSurface[], int i);
+	void invert(int size);
     GuiPiece* getPiece();
     void setPiece(GuiPiece* p);
     SDL_Rect getPosition();

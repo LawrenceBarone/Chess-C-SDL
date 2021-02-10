@@ -144,7 +144,7 @@ void Gui::initBoard()
 
     for (int i=0; i<tiles.size(); i++)
     {
-        tiles[i].initTexture(tileSurface);
+        tiles[i].initTexture(tileSurface, i);
     }
 }
 
@@ -341,18 +341,15 @@ void Gui::switchSide()
 {
     if (AI == BLACK)
     {
-        std::reverse(tiles.begin(), tiles.end());
         AI = WHITE;
     }
     else
     {
-        std::reverse(tiles.begin(), tiles.end());
         AI = BLACK;
     }
     for (int i=0; i<tiles.size(); i++)
     {
-		//tiles[i].destroyTexture(); ////////////////////////////////////////////////////////////
-        tiles[i].initTexture(tileSurface);
+        tiles[i].invert(SCREEN_SIZE/8);
     }
     lastMoveChecker = false;
     clearPieces();
