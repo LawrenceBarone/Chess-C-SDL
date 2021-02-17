@@ -16,7 +16,8 @@ typedef struct mdata_struct
     string eloChoice;
     string time;
     string ModedGame;
-
+	int gameBaseTime = 0;
+	int secondForEachMovement = 0;
 } mdata_struct;
 
 extern mdata_struct GlobalStruct;

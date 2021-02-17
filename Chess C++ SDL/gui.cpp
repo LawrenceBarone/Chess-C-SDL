@@ -17,6 +17,7 @@ using namespace defs;
 
 constexpr int SCREEN_SIZE = 600;
 static volatile bool aiThinking = false;
+Uint32 mTicksCount;
 
 AIChoice aiChoice = defs::STOCKFISH;
 std::string skill_lvl = "0";
@@ -206,9 +207,23 @@ void Gui::init()
 }
 
 //Launch General User interface
-void Gui::run()
+void Gui::run(mdata_struct data)
 {
     init();
+
+	global = data;
+	timedGame = global.gameBaseTime > 0; //si il y a du temps
+	timePlayer1 = global.gameBaseTime * 60 * 1000; //convertit en ms
+	timePlayer2 = global.gameBaseTime * 60 * 1000; //convertit en ms
+	secondForMovement = global.secondForEachMovement * 1000; //convertit en ms
+
+	//timer window
+	if (timedGame) {
+		timerWindow.init();
+	}
+	else {
+		timerWindow.~timer();
+	}
 
     ConnectToEngine("stockfish.exe", skill_lvl);
 
@@ -219,6 +234,29 @@ void Gui::run()
         handleInput();
         update_AI();
         render();
+
+
+		//timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode
+		if (timedGame) {
+			float deltaTime = (SDL_GetTicks() - mTicksCount);
+			mTicksCount = SDL_GetTicks();
+
+			if (game.getBoard().side == WHITE) { //wich side is playing
+				timePlayer1 -= deltaTime;
+				if (timePlayer1 <= 0) {
+					//player 1 has no time left
+				}
+			}
+			else
+			{
+				timePlayer2 -= deltaTime;
+				if (timePlayer2 <= 0) {
+					//player 2 has no time left
+				}
+			}
+
+			timerWindow.render(timePlayer1, timePlayer2);
+		}
 
         SDL_Delay(10);
     }
@@ -430,8 +468,20 @@ void Gui::movePiece(const SDL_Event& e) //when player move a piece
             {
 				//printf("maybe\n");
 				if (game.makeMove(move)) {
-					//printf("move\n");
+
+					//timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode 
+					if (game.getBoard().side != WHITE) { //invert because of game.makeMove
+						timePlayer1 += secondForMovement;
+						printf("plus player 1");
+					}
+					else
+					{
+						timePlayer2 += secondForMovement;
+						printf("plus player 2");
+					}
+
 					updatePieceLocation(move, i);
+
 					//two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode ||
 					/*if(twoplayer){
 					switchSide();
@@ -722,6 +772,17 @@ void Gui::moveAI()
         aiThinking = false;
 
         hasVerify_player_canMove = false;
+
+		//timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode 
+		if (game.getBoard().side != WHITE) { //invert because of game.makeMove
+			timePlayer1 += secondForMovement;
+			printf("plus player 1");
+		}
+		else
+		{
+			timePlayer2 += secondForMovement;
+			printf("plus player 2");
+		}
     }
 }
 
@@ -1003,6 +1064,11 @@ Gui::~Gui()
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+
+	//timer window
+	if (timedGame) {
+		timerWindow.~timer();
+	}
 
 	//text close
 	TTF_CloseFont(font);

@@ -160,7 +160,7 @@ void SetGame() {
 void runChess() {
 #ifdef GUI
 	gui::Gui gui;
-	gui.run();
+	gui.run(GlobalStruct);
 #else
 	consoleInterface();
 #endif

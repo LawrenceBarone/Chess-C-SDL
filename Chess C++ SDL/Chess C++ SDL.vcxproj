@@ -151,6 +151,7 @@
     <ClCompile Include="piece.cpp" />
     <ClCompile Include="search.cpp" />
     <ClCompile Include="tile.cpp" />
+    <ClCompile Include="timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="board.hpp" />
@@ -158,6 +159,7 @@
     <ClInclude Include="gui.hpp" />
     <ClInclude Include="piece.hpp" />
     <ClInclude Include="tile.hpp" />
+    <ClInclude Include="timer.hpp" />
     <ClInclude Include="utils.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

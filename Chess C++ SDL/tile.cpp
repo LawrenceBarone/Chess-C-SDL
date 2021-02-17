@@ -19,11 +19,9 @@ void Tile::initTexture(SDL_Surface* tileSurface[], int i)
 		SDL_DestroyTexture(texture);
 	}
 	if (colorWhite) {
-		printf("%d : blanc\n", i);
 		texture = SDL_CreateTextureFromSurface(renderer, tileSurface[0]);
 	}
 	else {
-		printf("%d : vert\n", i);
 		texture = SDL_CreateTextureFromSurface(renderer, tileSurface[1]);
 	}
 }
