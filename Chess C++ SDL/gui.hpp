@@ -6,7 +6,9 @@
 #include "tile.hpp"
 #include "piece.hpp"
 #include "board.hpp"
+#include "timer.hpp"
 #include "defs.hpp"
+#include "global.hpp"
 
 namespace gui {
 
@@ -33,7 +35,7 @@ public:
     Gui();
     ~Gui();
     void init();
-    void run();
+    void run(mdata_struct data);
     void playerCanPlay();
     void update_AI();
     void render();
@@ -81,6 +83,12 @@ private:
     bool lastMoveChecker = false;
     bool running = false;
     ThreadData *threadData = NULL;
+	mdata_struct global;
+	int timePlayer1;
+	int timePlayer2;
+	int secondForMovement;
+	bool timedGame;
+	timer::timer timerWindow;
 };
 
 struct ThreadData
