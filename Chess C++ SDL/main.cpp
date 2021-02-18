@@ -195,9 +195,9 @@ int main(int argc, char* argv[])
 
 	GlobalStruct.wChoice = "h";
 	GlobalStruct.bChoice = "ia";
-	GlobalStruct.wAIChoice = defs::AIChoice::NONE;
-	GlobalStruct.bAIChoice = defs::AIChoice::LAWRENCE;
-	GlobalStruct.eloChoice = "0";
+	GlobalStruct.wAIChoice = defs::Choice::STOCKFISH;
+	GlobalStruct.bAIChoice = defs::Choice::STOCKFISH;
+	GlobalStruct.eloChoice = "20";
 	GlobalStruct.time = "";
 	GlobalStruct.ModedGame = "";
 

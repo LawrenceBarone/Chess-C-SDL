@@ -91,9 +91,9 @@ std::string getNextMove(std::string position)
     return "(none";
 }
 
-defs::Status checkMate(std::string position)
+defs::GameStatus checkMate(std::string position)
 {
-    defs::Status output = defs::NONECHECK;
+    defs::GameStatus output = defs::NONECHECK;
     std::string result;
     std::string input = "position startpos moves " + position + "\nd\n";
 

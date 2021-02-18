@@ -11,8 +11,8 @@ typedef struct mdata_struct
 {
     string wChoice;
     string bChoice;
-    defs::AIChoice wAIChoice;
-    defs::AIChoice bAIChoice;
+    defs::Choice wAIChoice;
+    defs::Choice bAIChoice;
     string eloChoice;
     string time;
     string ModedGame;
