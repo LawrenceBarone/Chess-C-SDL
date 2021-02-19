@@ -11,13 +11,11 @@ typedef struct mdata_struct
 {
     string wChoice;
     string bChoice;
-    defs::Choice wAIChoice;
-    defs::Choice bAIChoice;
-    string eloChoice;
-    string time;
-    string ModedGame;
-	int gameBaseTime = 0; //temps de base pour les deux joueurs en minute
-	int secondForEachMovement = 0; //temps gagner à chaque coup en seconde
+    defs::Choice wAIChoice = defs::Choice::LAWRENCE;
+    defs::Choice bAIChoice = defs::Choice::LAWRENCE;
+    string eloChoice = "0";
+    string time = "15+5";
+    string ModedGame = "NONE";
 } mdata_struct;
 
 extern mdata_struct GlobalStruct;

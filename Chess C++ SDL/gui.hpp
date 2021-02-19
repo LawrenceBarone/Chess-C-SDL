@@ -35,7 +35,7 @@ public:
     Gui();
     ~Gui();
     void init();
-    void run(mdata_struct data);
+    void run();
     void playerCanPlay();
     void update_AI();
     void render();

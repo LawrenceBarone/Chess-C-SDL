@@ -25,11 +25,9 @@ TypeParty typeParty;
 Choice aiChoice = defs::STOCKFISH;
 std::string skill_lvl = "0";
 vector<std::string> lastMovesCheck;
-bool gameFinished = false;
 
-bool iaCantPlay = false;
+bool gameFinished = false;
 bool hasVerify_player_canMove = false;
-bool hasVerify_ia_canMove = false;
 
 static int aiThreadSeach(void* data)
 {
@@ -173,6 +171,8 @@ void Gui::init()
 {
     skill_lvl = GlobalStruct.eloChoice;
 
+    ConnectToEngine("stockfish.exe", skill_lvl);
+
     if (GlobalStruct.wAIChoice == PLAYER) {
         if (GlobalStruct.bAIChoice == PLAYER)
             typeParty = P_vs_P;
@@ -189,8 +189,24 @@ void Gui::init()
             typeParty = AI_vs_AI;
         }
         aiChoice = GlobalStruct.wAIChoice;
-   }
+    }
 
+    timedGame = GlobalStruct.time != "0+0";
+
+    timePlayer1 = stoi(GlobalStruct.time.substr(0, GlobalStruct.time.find('+'))) * 60 * 1000;
+    timePlayer2 = timePlayer1;
+
+    secondForMovement = stoi(GlobalStruct.time.substr(GlobalStruct.time.find('+') + 1, GlobalStruct.time.size())) * 1000;
+
+    //timer window
+    if (timedGame) {
+        timerWindow.init();
+    }
+    else {
+        timerWindow.~timer();
+    }
+
+    
 
     
     SDL_Init(SDL_INIT_EVERYTHING);
@@ -231,25 +247,9 @@ void Gui::init()
 }
 
 //Launch General User interface
-void Gui::run(mdata_struct data)
+void Gui::run()
 {
     init();
-
-	global = data;
-	timedGame = global.gameBaseTime > 0; //si il y a du temps
-	timePlayer1 = global.gameBaseTime * 60 * 1000; //convertit en ms
-	timePlayer2 = global.gameBaseTime * 60 * 1000; //convertit en ms
-	secondForMovement = global.secondForEachMovement * 1000; //convertit en ms
-
-	//timer window
-	if (timedGame) {
-		timerWindow.init();
-	}
-	else {
-		timerWindow.~timer();
-	}
-
-    ConnectToEngine("stockfish.exe", skill_lvl);
 
     running = true;
 
@@ -268,9 +268,9 @@ void Gui::run(mdata_struct data)
 
             break;
         case defs::AI_vs_AI:
-
+            
             update_AI();
-            //SDL_Delay(990);
+            SDL_Delay(990);
 
             break;
         default:
@@ -281,7 +281,7 @@ void Gui::run(mdata_struct data)
 
 
 		//timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode
-		if (timedGame) {
+		if (timedGame && ! gameFinished) {
 			float deltaTime = (SDL_GetTicks() - mTicksCount);
 			mTicksCount = SDL_GetTicks();
 
@@ -289,6 +289,9 @@ void Gui::run(mdata_struct data)
 				timePlayer1 -= deltaTime;
 				if (timePlayer1 <= 0) {
 					//player 1 has no time left
+                    gameFinished = true;
+
+                    cout << "player 1 has no time left" << endl;
 				}
 			}
 			else
@@ -296,6 +299,9 @@ void Gui::run(mdata_struct data)
 				timePlayer2 -= deltaTime;
 				if (timePlayer2 <= 0) {
 					//player 2 has no time left
+                    gameFinished = true;
+
+                    cout << "player 2 has no time left" << endl;
 				}
 			}
 
@@ -527,12 +533,12 @@ void Gui::movePiece(const SDL_Event& e) //when player move a piece
 					//timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode 
 					if (game.getBoard().side != WHITE) { //invert because of game.makeMove
 						timePlayer1 += secondForMovement;
-						printf("plus player 1");
+						
 					}
 					else
 					{
 						timePlayer2 += secondForMovement;
-						printf("plus player 2");
+						
 					}
 
 					updatePieceLocation(move, i);
@@ -553,8 +559,6 @@ void Gui::movePiece(const SDL_Event& e) //when player move a piece
                             toPos = sqrChar[i];
                     }
                     game.addToHistoPos_stockfish(fromPos + toPos);
-
-                    hasVerify_ia_canMove = false;
 				}
 				else {
 					pieceMovingInfo.tile->alignPiece();
@@ -700,8 +704,6 @@ void Gui::handlePromoteMove()
         if (p - promotePieceIndex == bN || p - promotePieceIndex == wN)     promoteSign = "n";
 
         game.addToHistoPos_stockfish(fromPos + toPos + promoteSign);
-
-        hasVerify_ia_canMove = false;
     }   
 
     pieceMovingInfo.pieceMoving = NULL;
@@ -752,6 +754,7 @@ void Gui::moveAI()
 {
     checkGameStatus();
 
+
     if (!gameFinished) {
         Move AImove = 0;
 
@@ -772,13 +775,9 @@ void Gui::moveAI()
             break;
         }
 
-        if (iaCantPlay) // IA have lost
-        {
+        if (AImove == 0) { // no move possible for IA
             std::cout << (game.getBoard().side == WHITE ? "white" : "black") << " checkMate" << std::endl;
-        }
-
-        if (AImove == 0) {
-            std::cout << "error ai move = 0" << std::endl;
+            gameFinished = true;
         }
         else {
             game.makeMove(AImove);
@@ -814,19 +813,17 @@ void Gui::moveAI()
             game.getBoard().moves.clear();
             game.generateMove(false);
             aiThinking = false;
-
+        }
         hasVerify_player_canMove = false;
 
-		//timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode 
-		if (game.getBoard().side != WHITE) { //invert because of game.makeMove
-			timePlayer1 += secondForMovement;
-			printf("plus player 1");
-		}
-		else
-		{
-			timePlayer2 += secondForMovement;
-			printf("plus player 2");
-		}
+        //timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode 
+        if (game.getBoard().side != WHITE) { //invert because of game.makeMove
+            timePlayer1 += secondForMovement;
+        }
+        else
+        {
+            timePlayer2 += secondForMovement;
+        }
     }
 }
 
@@ -899,8 +896,6 @@ void Gui::stockfishMove(Move* AImove) {
 
         game.addToHistoPos_stockfish(oldPos_str + newPos_str + (promote != " " ? promote : ""));
     }
-    else
-        iaCantPlay = true;
 }
 
 bool Gui::castleMove(Move move)
@@ -1011,7 +1006,7 @@ void Gui::render()
 
         //coordonée
         rect.x = 0;
-        rect.y = size * (AI == BLACK ? (7 - (i - 8)) : (i - 8));
+        rect.y = size * (GlobalStruct.bAIChoice != PLAYER ? (7 - (i - 8)) : (i - 8));
 
         //afficher
         SDL_RenderCopy(renderer, textTexture, 0, &rect);

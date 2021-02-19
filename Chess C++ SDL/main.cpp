@@ -160,7 +160,7 @@ void SetGame() {
 void runChess() {
 #ifdef GUI
 	gui::Gui gui;
-	gui.run(GlobalStruct);
+	gui.run();
 #else
 	consoleInterface();
 #endif
@@ -192,14 +192,6 @@ int main(int argc, char* argv[])
 	bool btnG = false;
 	bool quit = false;
 	SDL_Event e;
-
-	GlobalStruct.wChoice = "h";
-	GlobalStruct.bChoice = "ia";
-	GlobalStruct.wAIChoice = defs::Choice::STOCKFISH;
-	GlobalStruct.bAIChoice = defs::Choice::STOCKFISH;
-	GlobalStruct.eloChoice = "20";
-	GlobalStruct.time = "";
-	GlobalStruct.ModedGame = "";
 
 	int a = 1;
 	SDL_Event event;

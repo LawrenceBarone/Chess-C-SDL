@@ -156,6 +156,7 @@
   <ItemGroup>
     <ClInclude Include="board.hpp" />
     <ClInclude Include="defs.hpp" />
+    <ClInclude Include="global.hpp" />
     <ClInclude Include="gui.hpp" />
     <ClInclude Include="piece.hpp" />
     <ClInclude Include="tile.hpp" />

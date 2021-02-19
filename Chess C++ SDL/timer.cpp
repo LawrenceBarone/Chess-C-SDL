@@ -8,6 +8,27 @@ constexpr int SCREEN_HEIGHT = 200;
 namespace timer {
 
 	void timer::init() {
+
+		if (SDL_Init(SDL_INIT_VIDEO) < 0)
+		{
+			printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
+		}
+		else
+		{
+			//create the window
+			window = SDL_CreateWindow("Chess Timer", 660, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+
+			if (window == NULL)
+			{
+				printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
+			}
+			else
+			{
+				//create renderer
+				renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+			}
+		}
+
 		//text init
 		TTF_Init();
 
@@ -103,25 +124,7 @@ namespace timer {
 	}
 
 	timer::timer() {
-		if (SDL_Init(SDL_INIT_VIDEO) < 0)
-		{
-			printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
-		}
-		else
-		{
-			//create the window
-			window = SDL_CreateWindow("Chess Timer", 660, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-
-			if (window == NULL)
-			{
-				printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
-			}
-			else
-			{
-				//create renderer
-				renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-			}
-		}
+		
 	}
 
 	timer::~timer() {

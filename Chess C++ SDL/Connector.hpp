@@ -43,7 +43,7 @@ void ConnectToEngine(const char* path, std::string value)
 
    std::string init = "uci\nsetoption name Skill Level value " + value + "\nucinewgame\n";
    WriteFile(pipin_w, init.c_str(), init.length(), &writ, NULL);
-   Sleep(100);
+   Sleep(500);
    
 
    PeekNamedPipe(pipout_r, buffer, sizeof(buffer), &read, &available, NULL);
