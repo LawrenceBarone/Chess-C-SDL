@@ -182,7 +182,7 @@ int main(int argc, char* argv[])
 	bool quit = false;
 	SDL_Event e;
 
-	GlobalStruct.wAIChoice = defs::STOCKFISH;
+	GlobalStruct.wAIChoice = defs::PLAYER;
 	GlobalStruct.bAIChoice = defs::STOCKFISH;
 	GlobalStruct.eloStockfish = "0";
 	GlobalStruct.depthLawrence = "2";
@@ -362,7 +362,7 @@ int main(int argc, char* argv[])
 	//Already IA W or B
 	bool alreadyW = false, alreadyB = true;
 	//Global Struct vars
-	int eloStock = 0, eloLaw = 0;
+	int eloStock = 0, eloLaw = 2;
 
 	while (a) {
 		SDL_GetMouseState(&Mx, &My);
@@ -379,6 +379,7 @@ int main(int argc, char* argv[])
 						GlobalStruct.wAIChoice = defs::STOCKFISH;
 						sH = IMG_Load("imgs/computerblanc.png");
 						tH = SDL_CreateTextureFromSurface(renderer, sH);
+						
 						//Upload IA White
 						hw = false;
 						
@@ -490,7 +491,7 @@ int main(int argc, char* argv[])
 					tEloStockfish = SDL_CreateTextureFromSurface(renderer, sEloStockfish);
 					if (eloStock < 20) {
 						eloStock++;
-						GlobalStruct.eloStockfish = eloStock;
+						GlobalStruct.eloStockfish = to_string(eloStock);
 					}
 					
 					
@@ -503,7 +504,7 @@ int main(int argc, char* argv[])
 					tEloStockfish = SDL_CreateTextureFromSurface(renderer, sEloStockfish);
 					if (eloStock > 0) {
 						eloStock--;
-						GlobalStruct.eloStockfish = eloStock;
+						GlobalStruct.eloStockfish = to_string(eloStock);
 					}
 					
 				}
@@ -515,7 +516,7 @@ int main(int argc, char* argv[])
 					txtLaw = SDL_CreateTextureFromSurface(renderer, sxtLaw);
 					if (eloLaw < 4) {
 						eloLaw++;
-						GlobalStruct.depthLawrence = eloLaw;
+						GlobalStruct.depthLawrence = to_string(eloLaw);
 					}
 					
 
@@ -528,7 +529,7 @@ int main(int argc, char* argv[])
 					txtLaw = SDL_CreateTextureFromSurface(renderer, sxtLaw);
 					if (eloLaw > 0) {
 						eloLaw--;
-						GlobalStruct.depthLawrence = eloLaw;
+						GlobalStruct.depthLawrence = to_string(eloLaw);
 					}
 
 				}

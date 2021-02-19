@@ -197,13 +197,15 @@ void Gui::init()
 
     timedGame = GlobalStruct.time != "0+0";
 
-    timePlayer1 = stoi(GlobalStruct.time.substr(0, GlobalStruct.time.find('+'))) * 60 * 1000;
-    timePlayer2 = timePlayer1;
-
-    secondForMovement = stoi(GlobalStruct.time.substr(GlobalStruct.time.find('+') + 1, GlobalStruct.time.size())) * 1000;
-
+   
     //timer window
-    if (timedGame) {
+    if (timedGame && typeParty != AI_vs_AI) {
+        cout << "IA VS IA timer" << endl;
+        timePlayer1 = stoi(GlobalStruct.time.substr(0, GlobalStruct.time.find('+'))) * 60 * 1000;
+        timePlayer2 = timePlayer1;
+
+        secondForMovement = stoi(GlobalStruct.time.substr(GlobalStruct.time.find('+') + 1, GlobalStruct.time.size())) * 1000;
+
         timerWindow.init();
     }
     else {
@@ -273,16 +275,12 @@ void Gui::run()
 
             if (SDL_PollEvent(&e))
             {
-                if (e.type == SDL_QUIT || (e.type == SDL_WINDOWEVENT && e.window.event == SDL_WINDOWEVENT_CLOSE))
+                if (e.type == SDL_KEYDOWN)
                 {
-                    running = false;
-                }
-                else {
-                    update_AI();
-                    SDL_Delay(990);
-                }
+                    handleKeyDown(e);
+                }     
             }
-
+            update_AI();
             break;
         default:
             break;
@@ -290,9 +288,10 @@ void Gui::run()
 
         render();
 
-        TimerUpdate();
-
-        SDL_Delay(10);
+        if (typeParty != AI_vs_AI) {
+            TimerUpdate();
+        }
+       
     }
 
     CloseConnection(); // close stockfish
@@ -432,6 +431,11 @@ void Gui::handleKeyDown(const SDL_Event& e)
         {
 			//n for new game
             newGame();
+            break;
+        }
+        case SDLK_SPACE:
+        {
+            running = false;
             break;
         }
     }
@@ -798,7 +802,7 @@ void Gui::moveAI()
         }
 
         if (AImove == 0) { // no move possible for IA
-            std::cout << (game.getBoard().side == WHITE ? "white" : "black") << " checkMate" << std::endl;
+            std::cout << (game.getBoard().side == WHITE ? "white" : "black") << "  ia a putain de bugger checkMate" << std::endl;
             gameFinished = true;
         }
         else {
@@ -1127,10 +1131,6 @@ Gui::~Gui()
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
 
-	////timer window
-	//if (timedGame) {
-	//	timerWindow.~timer();
-	//}
 
 	//text close
 	TTF_CloseFont(font);

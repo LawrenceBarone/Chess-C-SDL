@@ -54,7 +54,6 @@ public:
     void handleMouseMotion(const SDL_Event& e);
     void movePiece(const SDL_Event& e);
     void handlePromoteMove();
-    void TimerUpdate();
     void checkGameStatus();
     void newGame();
     void switchSide();
