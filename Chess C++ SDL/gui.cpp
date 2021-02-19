@@ -412,6 +412,11 @@ void Gui::handleKeyDown(const SDL_Event& e)
             newGame();
             break;
         }
+        case SDLK_SPACE: 
+        {
+            running = false;
+            break;
+        }
     }
 }
 
@@ -1098,9 +1103,9 @@ Gui::~Gui()
     SDL_DestroyWindow(window);
 
 	//timer window
-	if (timedGame) {
-		timerWindow.~timer();
-	}
+	//if (timedGame) {
+	//	timerWindow.~timer();
+	//}
 
 	//text close
 	TTF_CloseFont(font);

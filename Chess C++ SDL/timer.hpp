@@ -16,9 +16,9 @@ namespace timer {
 		SDL_Window* window = NULL;
 		SDL_Renderer* renderer = NULL;
 		TTF_Font* font = NULL;
-		SDL_Surface* bkSurface;
+		SDL_Surface* bkSurface = NULL;
 		SDL_Texture* bkTexture = NULL;
-		SDL_Surface* textSurface[2];
+		SDL_Surface* textSurface[2] = { NULL,NULL };
 		SDL_Texture* textTexture = NULL;
 	};
 
