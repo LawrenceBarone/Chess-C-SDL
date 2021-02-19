@@ -16,7 +16,7 @@ typedef struct mdata_struct
     string eloChoice;
     string time;
     string ModedGame;
-	int gameBaseTime = 0; //temps de base pour les deux joueurs en minute
+	int gameBaseTime = 10; //temps de base pour les deux joueurs en minute
 	int secondForEachMovement = 0; //temps gagner à chaque coup en seconde
 } mdata_struct;
 
