@@ -1,16 +1,10 @@
 #define GUI
-#define DEFS
 #include "global.hpp"
 #include <SDL.h>
 #include <SDL_mixer.h>
 #include <stdio.h>
 #include <string>
 #include "multiple_windows.hpp"
-#ifdef DEFS
-	#include "defs.hpp"
-#endif // DEFS
-
-
 
 #ifdef GUI
 #include "gui.hpp"
@@ -22,7 +16,6 @@
 
 #define SDL_MAIN_HANDLED
 #include "SDL.h"
-#include <SDL_ttf.h>
 
 Mix_Music* music;
 
@@ -160,7 +153,7 @@ void SetGame() {
 void runChess() {
 #ifdef GUI
 	gui::Gui gui;
-	gui.run(GlobalStruct);
+	gui.run();
 #else
 	consoleInterface();
 #endif
@@ -193,13 +186,12 @@ int main(int argc, char* argv[])
 	bool quit = false;
 	SDL_Event e;
 
-	GlobalStruct.wChoice = "h";
-	GlobalStruct.bChoice = "ia";
-	GlobalStruct.wAIChoice = defs::AIChoice::NONE;
-	GlobalStruct.bAIChoice = defs::AIChoice::LAWRENCE;
-	GlobalStruct.eloChoice = "0";
-	GlobalStruct.time = "";
-	GlobalStruct.ModedGame = "";
+	GlobalStruct.wAIChoice = defs::PLAYER;
+	GlobalStruct.bAIChoice = defs::STOCKFISH;
+	GlobalStruct.eloStockfish = "0";
+	GlobalStruct.depthLawrence = "3";
+	GlobalStruct.time = "0+0";
+	GlobalStruct.ModedGame = "NONE";
 
 	int a = 1;
 	SDL_Event event;
@@ -211,12 +203,12 @@ int main(int argc, char* argv[])
 	SDL_Texture* background_texture = NULL;
 	
 	//Images
-	SDL_Surface* bStart_surface = NULL, * bQuit_surface = NULL, * sTimeF = NULL, * sH = NULL, * sHn = NULL , * sSupSign = NULL , * sInfSign = NULL, *sStartGame = NULL;
-	SDL_Texture* bSTart_texture = NULL, * bQuit_texture = NULL, * tTimeF = NULL, * tH = NULL, * tHn = NULL, * tSupSign = NULL, * tInfSign = NULL, * tStartGame = NULL;
+	SDL_Surface* bStart_surface = NULL, * sExit = NULL, * sTimeF = NULL, * sH = NULL, * sHn = NULL, * sSupSign = NULL, * sInfSign = NULL, * sStartGame = NULL, * sMenu = NULL, * sStock = NULL, * sLaw = NULL,*sNoT = NULL,* sSici = NULL,*sIta = NULL, *sFlecheGB = NULL,*sFlecheDW = NULL;
+	SDL_Texture* bSTart_texture = NULL, * tExit = NULL, * tTimeF = NULL, * tH = NULL, * tHn = NULL, * tSupSign = NULL, * tInfSign = NULL, * tStartGame = NULL, *tMenu = NULL, *tStock = NULL, *tLaw = NULL,*tNoT = NULL,*tSici = NULL, *tIta = NULL, * tFlecheGB = NULL, * tFlecheDW = NULL;
 
 	//Text 
-	SDL_Texture *tGameMode = NULL, *tPlayers = NULL, *tIA = NULL, * tLaw = NULL, *tTimeForm = NULL, *tPreformatedGames = NULL , *tEloStockfish = NULL;
-	SDL_Surface* sGameMode = NULL, * sPlayers = NULL, * sIA = NULL, * sLaw = NULL, * sTimeForm = NULL, * sPreformatedGames = NULL, * sEloStockfish = NULL;
+	SDL_Texture *tGameMode = NULL, *tPlayers = NULL, *txtIA = NULL, * txtLaw = NULL, *tTimeForm = NULL, *tPreformatedGames = NULL , *tEloStockfish = NULL;
+	SDL_Surface* sGameMode = NULL, * sPlayers = NULL, * sIA = NULL, * sxtLaw = NULL, * sTimeForm = NULL, * sPreformatedGames = NULL, * sEloStockfish = NULL;
 
 	if (TTF_Init() < 0) {
 		std::cout << "TTF not init"  << std::endl;
@@ -230,90 +222,112 @@ int main(int argc, char* argv[])
 	int Mx = 0;
 	int My = 0;
 
-	//human or IA
-	bool hw = false, hn = false;
+	
 
 	//change elo
-	char elo[20] = "";
-	int count = 1200;
+	char eloS[20] = "";
+	char eloL[20] = "";
+	int countS = 1200, countL = 1700;
 
-	SDL_Rect bStart_pos;
-	bStart_pos.w = 200;
-	bStart_pos.h = 100;
-	bStart_pos.x = 200;
-	bStart_pos.y = 100;
-
-	SDL_Rect TimeFpos;
-	TimeFpos.x = 500;
-	TimeFpos.y = 250;
-	TimeFpos.w = 100;
-	TimeFpos.h = 100;
+	SDL_Rect menuPos;   
+	menuPos.x = 0;
+	menuPos.y = 0;
+	menuPos.w = 800;
+	menuPos.h = 600;
 	
-
-	SDL_Rect bQuit_pos;
-	bQuit_pos.x = 350;
-	bQuit_pos.y = 250;
-	bQuit_pos.w = 100;
-	bQuit_pos.h = 100;
+	SDL_Rect exitPos;
+	exitPos.x = 616;
+	exitPos.y = 512;
+	exitPos.w = 114;
+	exitPos.h = 43;
 	
+	SDL_Rect timePos;
+	timePos.x = 365;
+	timePos.y = 70;
+	timePos.w = 365;
+	timePos.h = 367;
 
-	SDL_Rect Message_rect;
-	Message_rect.x = 10;
-	Message_rect.y = 10;
-	Message_rect.w = 50;
-	Message_rect.h = 30;
+	SDL_Rect WPos;
+	WPos.x = 113;
+	WPos.y = 98;
+	WPos.w = 126;
+	WPos.h = 39;
 
-	SDL_Rect Players_rect;
-	Players_rect.x = 40; 
-	Players_rect.y = 50;
-	Players_rect.w = 50;
-	Players_rect.h = 30;
+	SDL_Rect BPos;
+	BPos.x = 113;
+	BPos.y = 174;
+	BPos.w = 126;
+	BPos.h = 34;
 
-	SDL_Rect HorIAw;
-	HorIAw.x = 170; 
-	HorIAw.y = 50;
-	HorIAw.w = 60;
-	HorIAw.h = 40;
+	SDL_Rect StockPos;
+	StockPos.x = 88;
+	StockPos.y = 301;
+	StockPos.w = 177;
+	StockPos.h = 46;
 
-	SDL_Rect HorIAn;
-	HorIAn.x = 420;
-	HorIAn.y = 50;
-	HorIAn.w = 60;
-	HorIAn.h = 40;
+	SDL_Rect LawPos;
+	LawPos.x = 88;
+	LawPos.y = 405;
+	LawPos.w = 177;
+	LawPos.h = 46;
 
-	SDL_Rect IAtextpos;
-	IAtextpos.x = 10;
-	IAtextpos.y = 100;
-	IAtextpos.w = 60;
-	IAtextpos.h = 40;
+	SDL_Rect StockSignPos;
+	StockSignPos.x = 108;
+	StockSignPos.y = 355;
+	StockSignPos.w = 16;
+	StockSignPos.h = 31;
 
-	SDL_Rect infPos;
-	infPos.x = 250;
-	infPos.y = 100;
-	infPos.w = 40;
-	infPos.h = 40;
+	SDL_Rect LawSignPos;
+	LawSignPos.x = 108;
+	LawSignPos.y = 460;
+	LawSignPos.w = 16;
+	LawSignPos.h = 31;
 
-	SDL_Rect eloPos;
-	eloPos.x = 350;
-	eloPos.y = 100;
-	eloPos.w = 60;
-	eloPos.h = 50;
+	SDL_Rect NoTPos;
+	NoTPos.x = 612;
+	NoTPos.y = 13;
+	NoTPos.w = 112;
+	NoTPos.h = 50;
 
-	SDL_Rect supPos;
-	supPos.x = 500;
-	supPos.y = 100;
-	supPos.w = 40;
-	supPos.h = 40;
+	SDL_Rect SiciPos;
+	SiciPos.x = 480;
+	SiciPos.y = 450;
+	SiciPos.w = 112;
+	SiciPos.h = 50;
 
-	SDL_Rect startGPos;
-	startGPos.x = 250;
-	startGPos.y = 200;
-	startGPos.w = 40;
-	startGPos.h = 40;
+	SDL_Rect ItaPos;
+	ItaPos.x = 614;
+	ItaPos.y = 450;
+	ItaPos.w = 112;
+	ItaPos.h = 50;
+
+	SDL_Rect StockTextPos;
+	StockTextPos.x = 140;
+	StockTextPos.y = 355;
+	StockTextPos.w = 100;
+	StockTextPos.h = 30;
+
+	SDL_Rect LawTextPos;
+	LawTextPos.x = 140;
+	LawTextPos.y = 460;
+	LawTextPos.w = 100;
+	LawTextPos.h = 30;
+
+	SDL_Rect FlechePosGB; //Stock
+	FlechePosGB.x = 285; //285
+	FlechePosGB.y = 315; //315
+	FlechePosGB.w = 30; //30
+	FlechePosGB.h = 20; //20
+
+	SDL_Rect FlechePosDW; //Stock
+	FlechePosDW.x = 0; //45
+	FlechePosDW.y = 0; //315
+	FlechePosDW.w = 0; //30
+	FlechePosDW.h = 0; //20
 
 	SDL_Init(SDL_INIT_VIDEO);
 	window = SDL_CreateWindow(
-		"Setting",
+		"Menu Chess",
 		SDL_WINDOWPOS_CENTERED,
 		SDL_WINDOWPOS_CENTERED,
 		SCREEN_HEIGHT,
@@ -322,62 +336,35 @@ int main(int argc, char* argv[])
 	);
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-	background_surface = IMG_Load("imgs/bgimg.jpg");
+	background_surface = IMG_Load("imgs/menuHor2.png");
 	background_texture = SDL_CreateTextureFromSurface(renderer, background_surface);
 
-	sH = IMG_Load("imgs/H.png");
+
+
+	sH = IMG_Load("imgs/humanblanc.png");
 	tH = SDL_CreateTextureFromSurface(renderer, sH);
-	sHn = IMG_Load("imgs/Hn.png");
-	tHn = SDL_CreateTextureFromSurface(renderer, sHn);
-
-	sSupSign = IMG_Load("imgs/infsign.png");
-	tSupSign = SDL_CreateTextureFromSurface(renderer, sSupSign);
-	sInfSign = IMG_Load("imgs/supsign.png");
-	tInfSign = SDL_CreateTextureFromSurface(renderer, sInfSign);
-
-	sStartGame = IMG_Load("imgs/startButton.png");
-	tStartGame = SDL_CreateTextureFromSurface(renderer, sStartGame);
-
-	bQuit_surface = IMG_Load("imgs/wP.png");
-	bQuit_texture = SDL_CreateTextureFromSurface(renderer, bQuit_surface);
-
-	sTimeF = IMG_Load("imgs/TimeFormat.png");
-	tTimeF = SDL_CreateTextureFromSurface(renderer, sTimeF);
-
-	sGameMode = TTF_RenderText_Solid(sans, "Game Mode:", white);
-	tGameMode = SDL_CreateTextureFromSurface(renderer, sGameMode);
-
-	sPlayers = TTF_RenderText_Solid(sans, "Player 1:           vs Player 2:", white);
-	tPlayers = SDL_CreateTextureFromSurface(renderer, sPlayers);
-
-	sIA = TTF_RenderText_Solid(sans, "IA-  Stockfish:   ", white);
-	tIA = SDL_CreateTextureFromSurface(renderer, sIA);
-
-	sprintf_s(elo, "%d", count);
-
-	sEloStockfish = TTF_RenderText_Solid(sans, elo, white);
-	tEloStockfish = SDL_CreateTextureFromSurface(renderer, sEloStockfish);
-
-	sLaw = TTF_RenderText_Solid(sans, "Lawrence: +- 1800 ", white);
-	tLaw = SDL_CreateTextureFromSurface(renderer, sLaw);
-
-
-	SDL_QueryTexture(tGameMode, NULL, NULL, &Message_rect.w, &Message_rect.h);
-	SDL_Rect dstrect = { 0, 0, Message_rect.w, Message_rect.h };
-
-	SDL_QueryTexture(tPlayers, NULL, NULL, &Players_rect.w, &Players_rect.h);
-	SDL_Rect tdstrect = { Players_rect.x, Players_rect.y, Players_rect.w, Players_rect.h };
-
-	SDL_QueryTexture(tIA, NULL, NULL, &IAtextpos.w, &IAtextpos.h);
-	SDL_Rect tIArect = { IAtextpos.x, IAtextpos.y, IAtextpos.w, IAtextpos.h };
-
-	SDL_QueryTexture(tIA, NULL, NULL, &IAtextpos.w, &IAtextpos.h);
-	SDL_Rect tLawRect = { IAtextpos.x, IAtextpos.y+30, IAtextpos.w-10, IAtextpos.h };
-
-	SDL_QueryTexture(tEloStockfish, NULL, NULL, &eloPos.w, &eloPos.h);
-	SDL_Rect tEloRect = { eloPos.x, eloPos.y, eloPos.w, eloPos.h };
 
 	
+
+	sFlecheDW = IMG_Load("imgs/flecheNoir.png");
+	tFlecheDW = SDL_CreateTextureFromSurface(renderer, sFlecheDW);
+
+	sFlecheGB = IMG_Load("imgs/flecheNoir.png");
+	tFlecheGB = SDL_CreateTextureFromSurface(renderer, sFlecheGB);
+
+	sprintf_s(eloS, "%d", countS);
+	sprintf_s(eloL, "%d", countL);
+
+	sEloStockfish = TTF_RenderText_Solid(sans, eloS, black);
+	tEloStockfish = SDL_CreateTextureFromSurface(renderer, sEloStockfish);
+
+	sxtLaw = TTF_RenderText_Solid(sans, eloL, black);
+	txtLaw = SDL_CreateTextureFromSurface(renderer, sxtLaw);
+
+	//human or IA
+	bool hw = true, hn = false;
+	//Already IA W or B
+	bool alreadyW = false, alreadyB = true;
 
 	while (a) {
 		SDL_GetMouseState(&Mx, &My);
@@ -387,111 +374,286 @@ int main(int argc, char* argv[])
 				a = 0;
 				break;
 			case SDL_MOUSEBUTTONDOWN:
-				std::cout << "left button pressed" << std::endl;
-				if (Mx >= HorIAw.x && Mx <= HorIAw.x + HorIAw.w && My >= HorIAw.y && My <= HorIAw.y + HorIAw.h) {
-					if (hw == false) {
-						hw = true;
-						GlobalStruct.wChoice = "ia";
-						sH = IMG_Load("imgs/IA.png");
-						tH = SDL_CreateTextureFromSurface(renderer, sH);
+				
+				//White Human or computer
+				if (Mx >= WPos.x && Mx <= WPos.x + WPos.w && My >= WPos.y && My <= WPos.y + WPos.h) {
+					if (hw == true) {
 						
-					}
-					else if (hw == true) {
+						sH = IMG_Load("imgs/computerblanc.png");
+						tH = SDL_CreateTextureFromSurface(renderer, sH);
+						//Upload IA White
 						hw = false;
-						GlobalStruct.wChoice = "h";
-						sH = IMG_Load("imgs/H.png");
+						
+					}
+					else {
+						//Upload Humain White
+						sH = IMG_Load("imgs/humanblanc.png");
 						tH = SDL_CreateTextureFromSurface(renderer, sH);
+						FlechePosDW.w = 0;
+						FlechePosDW.h = 0;
+						hw = true;
+						GlobalStruct.wAIChoice = defs::PLAYER;
 						
 					}
 				}
-				if (Mx >= HorIAn.x && Mx <= HorIAn.x + HorIAn.w && My >= HorIAn.y && My <= HorIAn.y + HorIAn.h) {
+				//Black Human or computer
+				if (Mx >= BPos.x && Mx <= BPos.x + BPos.w && My >= BPos.y && My <= BPos.y + BPos.h) {
 					if (hn == false) {
+						//Upload Humain Black
+						sHn = IMG_Load("imgs/humannoir.png");
+						tHn = SDL_CreateTextureFromSurface(renderer, sHn);
+						FlechePosGB.w = 0;
+						FlechePosGB.h = 0;
+						GlobalStruct.bAIChoice = defs::PLAYER;
+						
 						hn = true;
-						GlobalStruct.bChoice = "ia";
-						sH = IMG_Load("imgs/IAn.png");
-						tHn = SDL_CreateTextureFromSurface(renderer, sH);
-						
 					}
-					else if (hn == true) {
+					else {
+						//Upload IA Black
+						sHn = IMG_Load("imgs/computerblack.png");
+						tHn = SDL_CreateTextureFromSurface(renderer, sHn);
 						hn = false;
-						GlobalStruct.bChoice = "h";
-						sH = IMG_Load("imgs/Hn.png");
-						tHn = SDL_CreateTextureFromSurface(renderer, sH);
+						
 						
 					}
 				}
-				if (Mx >= supPos.x && Mx <= supPos.x + supPos.w && My >= supPos.y && My <= supPos.y + supPos.h) {
-					std::cout << "sup" << std::endl;
-					if (count < 3200) {
-						count += 100;
-						sprintf_s(elo, "%d", count);
-						GlobalStruct.eloChoice = std::to_string((count - 1200) / 100);
-						std::cout << GlobalStruct.eloChoice << std::endl;
-						sEloStockfish = TTF_RenderText_Solid(sans, elo, white);
-						tEloStockfish = SDL_CreateTextureFromSurface(renderer, sEloStockfish);
+				//Stockfish white or black 
+				if (hw == false) {
+					
+					if (Mx >= StockPos.x && Mx <= StockPos.x + (StockPos.w) / 2 && My >= StockPos.y && My <= StockPos.y + StockPos.h) {
+						
+						FlechePosDW.x = 45;
+						FlechePosDW.y = 315;
+						FlechePosDW.w = 30;
+						FlechePosDW.h = 25;
+							GlobalStruct.wAIChoice = defs::STOCKFISH;
+							
+							sFlecheDW = IMG_Load("imgs/flecheBlanche.png");
+							tFlecheDW = SDL_CreateTextureFromSurface(renderer, sFlecheDW);
+						
 					}
 				}
-				if (Mx >= infPos.x && Mx <= infPos.x + infPos.w && My >= infPos.y && My <= infPos.y + infPos.h) {
-					std::cout << "inf" << std::endl;
-					if (count > 1200) {
-						count -= 100;
-						sprintf_s(elo, "%d", count);
-						GlobalStruct.eloChoice = std::to_string((count - 1200) /100);
-						std::cout << GlobalStruct.eloChoice << std::endl;
-						sEloStockfish = TTF_RenderText_Solid(sans, elo, white);
-						tEloStockfish = SDL_CreateTextureFromSurface(renderer, sEloStockfish);
+				if (hn == false) {
+					
+					if (Mx >= (StockPos.x) * 2 && Mx <= StockPos.x + StockPos.w && My >= StockPos.y && My <= StockPos.y + StockPos.h) {
+						
+						FlechePosGB.x = 285;
+						FlechePosGB.y = 315;
+						FlechePosGB.w = 30;
+						FlechePosGB.h = 25;
+
+							GlobalStruct.bAIChoice = defs::STOCKFISH;
+						
+							sFlecheGB = IMG_Load("imgs/flecheNoir.png");
+							tFlecheGB = SDL_CreateTextureFromSurface(renderer, sFlecheGB);
+						
 					}
+				}
+				
+				//Lawrence white or black 
+				if (hw == false) {
+					
+					if (Mx >= LawPos.x && Mx <= LawPos.x + LawPos.w/2 && My >= LawPos.y && My <= LawPos.y + LawPos.h) {
+					
+						FlechePosDW.x = 45;
+						FlechePosDW.y = 415;
+						FlechePosDW.w = 30;
+						FlechePosDW.h = 25;
+						sFlecheDW = IMG_Load("imgs/flecheBlanche.png");
+						tFlecheDW = SDL_CreateTextureFromSurface(renderer, sFlecheDW);
+							GlobalStruct.wAIChoice = defs::LAWRENCE;
+						
+						
+					}
+				}
+				if (hn == false) {
+					
+					if (Mx >= (LawPos.x)*2 && Mx <= LawPos.x + LawPos.w && My >= LawPos.y && My <= LawPos.y + LawPos.h) {
+						
+						FlechePosGB.x = 285;
+						FlechePosGB.y = 415;
+						FlechePosGB.w = 30;
+						FlechePosGB.h = 25;
+							GlobalStruct.bAIChoice = defs::LAWRENCE;
+						
+							sFlecheGB = IMG_Load("imgs/flecheNoir.png");
+							tFlecheGB = SDL_CreateTextureFromSurface(renderer, sFlecheGB);
+						
+					}
+				}
+				
+
+				//Stockfish Signs elo
+				if (Mx >= StockSignPos.x && Mx <= StockSignPos.x + StockSignPos.w && My >= StockSignPos.y && My <= StockSignPos.y + (StockSignPos.h)/2) {
+					countS < 3200 ? countS += 100 : 3200;
+					sprintf_s(eloS, "%d", countS);
+					sEloStockfish = TTF_RenderText_Solid(sans, eloS, black);
+					tEloStockfish = SDL_CreateTextureFromSurface(renderer, sEloStockfish);
 					
 				}
-				if (Mx >= startGPos.x && Mx <= startGPos.x + startGPos.w && My >= startGPos.y && My <= startGPos.y + startGPos.h) {
+				else if (Mx >= StockSignPos.x && Mx <= StockSignPos.x + StockSignPos.w && My >= StockSignPos.y && My <= StockSignPos.y + StockSignPos.h) {
+
+					countS > 1200 ? countS -= 100 : 1200; 
+					sprintf_s(eloS, "%d", countS);
+					sEloStockfish = TTF_RenderText_Solid(sans, eloS, black);
+					tEloStockfish = SDL_CreateTextureFromSurface(renderer, sEloStockfish);
+					
+				}
+				//Lawrence Signs elo
+				if (Mx >= LawSignPos.x && Mx <= LawSignPos.x + LawSignPos.w && My >= LawSignPos.y && My <= LawSignPos.y + (LawSignPos.h) / 2) {
+					countL < 1900 ? countL += 50 : 1900;
+					sprintf_s(eloL, "%d", countL);
+					sxtLaw = TTF_RenderText_Solid(sans, eloL, black);
+					txtLaw = SDL_CreateTextureFromSurface(renderer, sxtLaw);
+
+				}
+				else if (Mx >= LawSignPos.x && Mx <= LawSignPos.x + LawSignPos.w && My >= LawSignPos.y && My <= LawSignPos.y + LawSignPos.h) {
+
+					countL > 1600 ? countL -= 50 : 1600;
+					sprintf_s(eloL, "%d", countL);
+					sxtLaw = TTF_RenderText_Solid(sans, eloL, black);
+					txtLaw = SDL_CreateTextureFromSurface(renderer, sxtLaw);
+
+				}
+				//Time Choice
+				//Do 9 struct of the pos , or do the calcul splits of 1 square into 9 squares .
+				if (Mx >= NoTPos.x && Mx <= NoTPos.x + NoTPos.w && My >= NoTPos.y && My <= NoTPos.y + NoTPos.h) {
+					GlobalStruct.time = "0+0";
 					a = 0;
 				}
-					break;
+				if (Mx >= timePos.x && Mx <= timePos.x + timePos.w / 3) {
+					if (My >= timePos.y && My <= timePos.y + timePos.h / 3) {
+						GlobalStruct.time = "1+0";
+						a = 0;
+						
+					}
+					else if (My >= timePos.y && My <= timePos.y + (timePos.h / 3)*2) {
+						GlobalStruct.time = "3+2";
+						a = 0;
+						
+					}
+					else if (My >= timePos.y && My <= timePos.y + timePos.h) {
+						GlobalStruct.time = "10+0";
+						a = 0;
+						
+					}
+				}
+				else if (Mx >= timePos.x && Mx <= timePos.x + (timePos.w /3) *2) {
+					if (My >= timePos.y && My <= timePos.y + timePos.h / 3) {
+						GlobalStruct.time = "2+1";
+						a = 0;
+						
+					}
+					else if (My >= timePos.y && My <= timePos.y + (timePos.h / 3) * 2) {
+						GlobalStruct.time = "5+0";
+						a = 0;
+						
+					}
+					else if (My >= timePos.y && My <= timePos.y + timePos.h) {
+						GlobalStruct.time = "10+5";
+						a = 0;
+						
+					}
+				}
+				else if(Mx >= timePos.x && Mx <= timePos.x + timePos.w){
+					if (My >= timePos.y && My <= timePos.y + timePos.h / 3) {
+						GlobalStruct.time = "3+0";
+						a = 0;
+						
+					}
+					else if (My >= timePos.y && My <= timePos.y + (timePos.h / 3) * 2) {
+						GlobalStruct.time = "5+3";
+						a = 0;
+						
+					}
+					else if (My >= timePos.y && My <= timePos.y + timePos.h) {
+						GlobalStruct.time = "15+10";
+						a = 0;
+						
+					}
+				}
+				//Mode Game 
+				if (Mx >= SiciPos.x && Mx <= SiciPos.x + SiciPos.w && My >= SiciPos.y && My <= SiciPos.y + SiciPos.h) {
+					GlobalStruct.ModedGame = "SICILIAN";
+					a = 0;
+				}
+				if (Mx >= ItaPos.x && Mx <= ItaPos.x + ItaPos.w && My >= ItaPos.y && My <= ItaPos.y + ItaPos.h) {
+					GlobalStruct.ModedGame = "ITALIAN";
+					a = 0;
+				}
+				//Exit
+				if (Mx >= exitPos.x && Mx <= exitPos.x + exitPos.w && My >= exitPos.y && My <= exitPos.y + exitPos.h) {
+					return EXIT_FAILURE;
+				}
+				break;
 
 			}
 		}
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, background_texture, NULL, NULL);
-		SDL_RenderCopy(renderer, bSTart_texture, NULL, &bStart_pos);
-		SDL_RenderCopy(renderer, tTimeF, NULL, &TimeFpos);
-		SDL_RenderCopy(renderer, bQuit_texture, NULL, &bQuit_pos);
-		SDL_RenderCopy(renderer, tGameMode, NULL, &dstrect);
-		SDL_RenderCopy(renderer, tH, NULL, &HorIAw);
-		SDL_RenderCopy(renderer, tHn, NULL, &HorIAn);
-		SDL_RenderCopy(renderer, tPlayers, NULL, &tdstrect);
-		SDL_RenderCopy(renderer, tIA, NULL, &tIArect);
-		SDL_RenderCopy(renderer, tLaw, NULL, &tLawRect);
-		SDL_RenderCopy(renderer, tSupSign, NULL, &supPos);
-		SDL_RenderCopy(renderer, tEloStockfish, NULL, &tEloRect);
-		SDL_RenderCopy(renderer, tInfSign, NULL, &infPos);
-		SDL_RenderCopy(renderer, tStartGame, NULL, &startGPos);
+		SDL_RenderCopy(renderer, tTimeF, NULL, &timePos);
+		SDL_RenderCopy(renderer, tStartGame, NULL, &NoTPos);
+		SDL_RenderCopy(renderer, tH, NULL, &WPos);
+		SDL_RenderCopy(renderer, tHn, NULL, &BPos);
+		SDL_RenderCopy(renderer, tStock, NULL, &StockPos);
+		SDL_RenderCopy(renderer, tLaw, NULL, &LawPos);
+		SDL_RenderCopy(renderer, tSupSign, NULL, &StockSignPos);
+		SDL_RenderCopy(renderer, tInfSign, NULL, &LawSignPos);
+		SDL_RenderCopy(renderer, tNoT, NULL, &NoTPos);
+		SDL_RenderCopy(renderer, tSici, NULL, &SiciPos);
+		SDL_RenderCopy(renderer, tIta, NULL, &ItaPos);
+		SDL_RenderCopy(renderer, tEloStockfish, NULL, &StockTextPos);
+		SDL_RenderCopy(renderer, txtLaw, NULL, &LawTextPos);
+		SDL_RenderCopy(renderer, tFlecheDW, NULL, &FlechePosDW);
+		SDL_RenderCopy(renderer, tFlecheGB, NULL, &FlechePosGB);
 		SDL_RenderPresent(renderer);
 	}
-	SDL_DestroyTexture(tGameMode);
-	SDL_FreeSurface(sGameMode);
-	SDL_DestroyTexture(tStartGame);
-	SDL_FreeSurface(sStartGame);
-	SDL_DestroyTexture(tIA);
-	SDL_FreeSurface(sIA);
-	SDL_DestroyTexture(tH);
-	SDL_FreeSurface(sH);
-	SDL_DestroyTexture(tHn);
-	SDL_FreeSurface(sHn);
-	SDL_DestroyTexture(tPlayers);
-	SDL_FreeSurface(sPlayers);
-	SDL_DestroyTexture(tSupSign);
-	SDL_FreeSurface(sSupSign);
-	SDL_DestroyTexture(tInfSign);
-	SDL_FreeSurface(sInfSign);
-	SDL_DestroyTexture(bSTart_texture);
-	SDL_FreeSurface(bStart_surface);
-	SDL_DestroyTexture(tTimeF);
-	SDL_FreeSurface(sTimeF);
-	SDL_DestroyTexture(bQuit_texture);
-	SDL_FreeSurface(bQuit_surface);
-	SDL_DestroyRenderer(renderer);
+	
 	SDL_DestroyTexture(background_texture);
 	SDL_FreeSurface(background_surface);
+
+	SDL_DestroyTexture(tTimeF);
+	SDL_FreeSurface(sTimeF);
+
+	SDL_DestroyTexture(tFlecheDW);
+	SDL_FreeSurface(sFlecheDW);
+
+	SDL_DestroyTexture(tFlecheGB);
+	SDL_FreeSurface(sFlecheGB);
+
+	SDL_DestroyTexture(tStartGame);
+	SDL_FreeSurface(sStartGame);
+
+	SDL_DestroyTexture(txtLaw);
+	SDL_FreeSurface(sxtLaw);
+
+	SDL_DestroyTexture(tH);
+	SDL_FreeSurface(sH);
+
+	SDL_DestroyTexture(tHn);
+	SDL_FreeSurface(sHn);
+
+	SDL_DestroyTexture(tStock);
+	SDL_FreeSurface(sStock);
+
+	SDL_DestroyTexture(tLaw);
+	SDL_FreeSurface(sLaw);
+
+	SDL_DestroyTexture(tSupSign);
+	SDL_FreeSurface(sSupSign);
+
+	SDL_DestroyTexture(tInfSign);
+	SDL_FreeSurface(sInfSign);
+
+	SDL_DestroyTexture(tNoT);
+	SDL_FreeSurface(sNoT);
+
+	SDL_DestroyTexture(tSici);
+	SDL_FreeSurface(sSici);
+
+	SDL_DestroyTexture(tIta);
+	SDL_FreeSurface(sIta);
+
 	SDL_DestroyWindow(window);
 	close();
 
@@ -499,6 +661,7 @@ int main(int argc, char* argv[])
 	runChess();
 	return 0;
 }
+
 
 
 

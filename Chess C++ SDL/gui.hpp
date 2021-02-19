@@ -35,7 +35,7 @@ public:
     Gui();
     ~Gui();
     void init();
-    void run(mdata_struct data);
+    void run();
     void playerCanPlay();
     void update_AI();
     void render();
@@ -53,6 +53,7 @@ public:
     void handleMouseMotion(const SDL_Event& e);
     void movePiece(const SDL_Event& e);
     void handlePromoteMove();
+    void checkGameStatus();
     void newGame();
     void switchSide();
     void setLastMovePos(int from, int to);
@@ -66,7 +67,7 @@ private:
     SDL_Renderer *renderer = NULL;
     std::vector<Tile> tiles {};
     SDL_Surface* tileSurface[4];
-	SDL_Surface* textSurface[15];
+	SDL_Surface* textSurface[16];
     SDL_Surface* pieceSurface[12];
     PieceMoving pieceMovingInfo {};
     board::Game game {};
@@ -94,5 +95,7 @@ struct ThreadData
 {
     Gui* gui = NULL;
 };
+
+void checkGameStatus();
 
 }
