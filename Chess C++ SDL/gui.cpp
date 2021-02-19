@@ -1,10 +1,15 @@
 #include "gui.hpp"
 
 #include <SDL_image.h>
+#include <SDL_ttf.h>
+#include <string>
 #include <algorithm>
+#include <iostream>
+#include <list>
 
 #include "utils.hpp"
 #include "Connector.hpp"
+#include "global.hpp"
 
 extern void search(board::Game& game);
 
@@ -14,12 +19,15 @@ using namespace defs;
 
 constexpr int SCREEN_SIZE = 600;
 static volatile bool aiThinking = false;
+Uint32 mTicksCount;
 
-AIChoice aiChoice = defs::STOCKFISH;
+TypeParty typeParty;
+Choice aiChoice = defs::STOCKFISH;
 std::string skill_lvl = "0";
+vector<std::string> lastMovesCheck;
 
-bool isCheckMate = false;
-bool has_verifyIfPlayerCanMove = false;
+bool gameFinished = false;
+bool hasVerify_player_canMove = false;
 
 static int aiThreadSeach(void* data)
 {
@@ -28,18 +36,19 @@ static int aiThreadSeach(void* data)
     dataThread->gui->moveAI();
 
 	//AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI || AI vs AI ||
-	/*if (iavsia) {
+	if (typeParty == AI_vs_AI) {
 		if (dataThread->gui->AI == BLACK)
 		{
+            aiChoice = GlobalStruct.wAIChoice;
 			dataThread->gui->AI = WHITE;
 		}
 		else
 		{
+            aiChoice = GlobalStruct.bAIChoice;
 			dataThread->gui->AI = BLACK;
 		}
 		dataThread->gui->render();
-		printf("ai move");
-	}*/
+	}
 
     return 0;
 }
@@ -90,6 +99,29 @@ void Gui::initSurface()
     pieceSurface[10] = IMG_Load("imgs/bQ.png");
     pieceSurface[11] = IMG_Load("imgs/bK.png");
 
+	//textSurface 	//font || font || font || font || font || font ||
+
+	SDL_Color textColor = { 0, 0, 0 };
+	font = TTF_OpenFont("font/arial.ttf", 100);
+
+	textSurface[0] = TTF_RenderText_Blended(font, "a", textColor);
+	textSurface[1] = TTF_RenderText_Blended(font, "b", textColor);
+	textSurface[2] = TTF_RenderText_Blended(font, "c", textColor);
+	textSurface[3] = TTF_RenderText_Blended(font, "d", textColor);
+	textSurface[4] = TTF_RenderText_Blended(font, "e", textColor);
+	textSurface[5] = TTF_RenderText_Blended(font, "f", textColor);
+	textSurface[6] = TTF_RenderText_Blended(font, "g", textColor);
+	textSurface[7] = TTF_RenderText_Blended(font, "h", textColor);
+
+    textSurface[8] = TTF_RenderText_Blended(font, "1", textColor);
+	textSurface[9] = TTF_RenderText_Blended(font, "2", textColor);
+	textSurface[10] = TTF_RenderText_Blended(font, "3", textColor);
+	textSurface[11] = TTF_RenderText_Blended(font, "4", textColor);
+	textSurface[12] = TTF_RenderText_Blended(font, "5", textColor);
+	textSurface[13] = TTF_RenderText_Blended(font, "6", textColor);
+	textSurface[14] = TTF_RenderText_Blended(font, "7", textColor);
+	textSurface[15] = TTF_RenderText_Blended(font, "8", textColor);
+
     promoteSqrSurface = IMG_Load("imgs/promoteSqr.png");
     promoteTexture = SDL_CreateTextureFromSurface(renderer, promoteSqrSurface);
     lastmoveTextureLight = SDL_CreateTextureFromSurface(renderer, tileSurface[2]);
@@ -103,7 +135,7 @@ void Gui::initBoard()
 {
     bool isWhite = false;
     int tileSize = SCREEN_SIZE / 8;
-
+	
     for(Sqr rank=RANK_8; rank>=RANK_1; --rank)
     {
         for(Sqr file=FILE_A; file<=FILE_H; ++file)
@@ -118,7 +150,7 @@ void Gui::initBoard()
 
     for (int i=0; i<tiles.size(); i++)
     {
-        tiles[i].initTexture(tileSurface);
+        tiles[i].initTexture(tileSurface, i);
     }
 }
 
@@ -137,7 +169,51 @@ void Gui::initPieces()
 
 void Gui::init()
 {
+    skill_lvl = GlobalStruct.eloChoice;
+
+    ConnectToEngine("stockfish.exe", skill_lvl);
+
+    if (GlobalStruct.wAIChoice == PLAYER) {
+        if (GlobalStruct.bAIChoice == PLAYER)
+            typeParty = P_vs_P;
+        else {
+            typeParty = P_vs_AI;
+            aiChoice = GlobalStruct.bAIChoice;
+        }
+    }
+    else {
+        if (GlobalStruct.bAIChoice == PLAYER) {
+            typeParty = P_vs_AI;
+        }
+        else {
+            typeParty = AI_vs_AI;
+        }
+        aiChoice = GlobalStruct.wAIChoice;
+    }
+
+    timedGame = GlobalStruct.time != "0+0";
+
+    timePlayer1 = stoi(GlobalStruct.time.substr(0, GlobalStruct.time.find('+'))) * 60 * 1000;
+    timePlayer2 = timePlayer1;
+
+    secondForMovement = stoi(GlobalStruct.time.substr(GlobalStruct.time.find('+') + 1, GlobalStruct.time.size())) * 1000;
+
+    //timer window
+    if (timedGame) {
+        timerWindow.init();
+    }
+    else {
+        timerWindow.~timer();
+    }
+
+    
+
+    
     SDL_Init(SDL_INIT_EVERYTHING);
+
+	//text init
+	TTF_Init();
+
     initSurface();
 
     for (int i = 0; i < 2; ++i)
@@ -160,14 +236,14 @@ void Gui::init()
     threadData->gui = this;
 
 	//choix de la couleur || choix de la couleur || choix de la couleur || choix de la couleur || choix de la couleur || choix de la couleur || choix de la couleur || 
-	//if(colorChoose == BLACK){
-	//switchside();
-	//}
+	if(typeParty == P_vs_AI && GlobalStruct.bAIChoice == PLAYER){
+        switchSide();
+	}
 
 	//IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA ||
-	/*if (iavsia) {
-		AI = WHITE;
-	}*/
+	if (typeParty == AI_vs_AI) {
+        AI = WHITE;
+	}
 }
 
 //Launch General User interface
@@ -175,16 +251,62 @@ void Gui::run()
 {
     init();
 
-    if (aiChoice == STOCKFISH) 
-        ConnectToEngine("stockfish.exe", skill_lvl);
-
     running = true;
 
     while (running)
     {
-        handleInput();
-        update_AI();
+        switch (typeParty)
+        {
+        case defs::P_vs_AI:
+
+            handleInput();
+            update_AI();
+
+            break;
+        case defs::P_vs_P:
+            handleInput();
+
+            break;
+        case defs::AI_vs_AI:
+            
+            update_AI();
+            SDL_Delay(990);
+
+            break;
+        default:
+            break;
+        }
+
         render();
+
+
+		//timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode
+		if (timedGame && ! gameFinished) {
+			float deltaTime = (SDL_GetTicks() - mTicksCount);
+			mTicksCount = SDL_GetTicks();
+
+			if (game.getBoard().side == WHITE) { //wich side is playing
+				timePlayer1 -= deltaTime;
+				if (timePlayer1 <= 0) {
+					//player 1 has no time left
+                    gameFinished = true;
+
+                    cout << "player 1 has no time left" << endl;
+				}
+			}
+			else
+			{
+				timePlayer2 -= deltaTime;
+				if (timePlayer2 <= 0) {
+					//player 2 has no time left
+                    gameFinished = true;
+
+                    cout << "player 2 has no time left" << endl;
+				}
+			}
+
+			timerWindow.render(timePlayer1, timePlayer2);
+		}
 
         SDL_Delay(10);
     }
@@ -192,15 +314,51 @@ void Gui::run()
     CloseConnection(); // close stockfish
 }
 
+void Gui::checkGameStatus() {
+    std::string lastMove = "";
+    switch (checkMate(game.getHistoPos_stockfish()))
+    {
+    case CHECKMATE:
+        std::cout << (game.getBoard().side == WHITE ? "white" : "black") << " checkmate" << std::endl;
+        gameFinished = true;
+        break;
+    case STALEMATE:
+        std::cout << "stalemate" << std::endl;
+        gameFinished = true;
+        break;
+    case CHECK:
+        
+
+        if (lastMovesCheck.size() >= 6) {
+            lastMovesCheck.erase(lastMovesCheck.begin());
+            
+        }
+
+        for (int i = game.getHistoPos_stockfish().size() - 2; i > 0 && game.getHistoPos_stockfish()[i] != ' '; i--) {
+            lastMove += game.getHistoPos_stockfish()[i];
+        }
+        lastMovesCheck.push_back(lastMove);
+
+        if (lastMovesCheck.size() >= 6) {
+            if ((lastMovesCheck[0] == lastMovesCheck[2] && lastMovesCheck[2] == lastMovesCheck[4]) &&
+                (lastMovesCheck[1] == lastMovesCheck[3] && lastMovesCheck[3] == lastMovesCheck[5])) {
+
+                std::cout << "stalemate" << std::endl;
+                gameFinished = true;
+            }
+        }
+        break;
+    default:
+        break;
+    }
+}
+
 void Gui::handleInput()
 {
-    if (!has_verifyIfPlayerCanMove ) {
-        has_verifyIfPlayerCanMove = true;
-
-        if (getNextMove(game.getHistoPos_stockfish()) == "(none") {
-            isCheckMate = true;
-            std::cout << "player checkmate" << std::endl;
-        }
+    if (!hasVerify_player_canMove) {
+        hasVerify_player_canMove = true;
+        
+        checkGameStatus();
     }
 
     SDL_Event e;
@@ -221,33 +379,25 @@ void Gui::handleInput()
         }
         else if (e.type == SDL_MOUSEBUTTONDOWN)
         {
-			//IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA ||
-			//if (!iavsia) {
-				handleMouseDown(e);
-			//}
-
+			if(!gameFinished)
+			    handleMouseDown(e);
         }
         else if (e.type == SDL_MOUSEMOTION)
         {
-			//IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA ||
-			//if (!iavsia) {
             handleMouseMotion(e);
-			//}
+
         }
         else if (e.type == SDL_MOUSEBUTTONUP && e.button.button == SDL_BUTTON_LEFT)
         {
-			//IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA ||
-			//if (!iavsia) {
-				if (promotePieceIndex != -1)
-				{
-					handlePromoteMove();
-				}
+			if (promotePieceIndex != -1)
+			{
+				handlePromoteMove();
+			}
 
-				else if (pieceMovingInfo.pieceMoving != NULL)
-				{
-					movePiece(e);
-				}
-			//}
+			else if (pieceMovingInfo.pieceMoving != NULL)
+			{
+				movePiece(e);
+			}
         }
     }
 }
@@ -261,16 +411,6 @@ void Gui::handleKeyDown(const SDL_Event& e)
 			//n for new game
             newGame();
             break;
-        }
-        case SDLK_s: // s to change side || s to change side || s to change side || s to change side || s to change side || s to change side || s to change side || s to change side || s to change side || 
-        {
-			//s for switch side
-            switchSide();
-        }
-        case SDLK_p:
-        {
-            //active stockfish
-
         }
     }
 }
@@ -300,17 +440,15 @@ void Gui::switchSide()
 {
     if (AI == BLACK)
     {
-        std::reverse(tiles.begin(), tiles.end());
         AI = WHITE;
     }
     else
     {
-        std::reverse(tiles.begin(), tiles.end());
         AI = BLACK;
     }
     for (int i=0; i<tiles.size(); i++)
     {
-        tiles[i].initTexture(tileSurface);
+        tiles[i].invert(SCREEN_SIZE/8);
     }
     lastMoveChecker = false;
     clearPieces();
@@ -391,12 +529,24 @@ void Gui::movePiece(const SDL_Event& e) //when player move a piece
             {
 				//printf("maybe\n");
 				if (game.makeMove(move)) {
-					//printf("move\n");
+
+					//timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode 
+					if (game.getBoard().side != WHITE) { //invert because of game.makeMove
+						timePlayer1 += secondForMovement;
+						
+					}
+					else
+					{
+						timePlayer2 += secondForMovement;
+						
+					}
+
 					updatePieceLocation(move, i);
+
 					//two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode ||
-					/*if(twoplayer){
-					switchSide();
-					}*/
+					if(typeParty == P_vs_P){
+					    switchSide();
+					}
 
 
                     //store move into histoPosition_stockfish
@@ -569,9 +719,9 @@ void Gui::handlePromoteMove()
     game.generateMove(false);
 
 	//two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode || two player mode ||
-	//if(twoplayer){
-	//  switchSide();
-	//}
+	if(typeParty == P_vs_P){
+	    switchSide();
+	}
 
 }
 
@@ -602,70 +752,78 @@ void Gui::handleMouseMotion(const SDL_Event& e)
 
 void Gui::moveAI()
 {
-    Move AImove = 0;
+    checkGameStatus();
 
-    switch (aiChoice)
-    {
-    case defs::STOCKFISH:
 
-        stockfishMove(&AImove);
+    if (!gameFinished) {
+        Move AImove = 0;
 
-        std::cout << game.getHistoPos_stockfish() << std::endl;
-
-        break;
-    case defs::LAWRENCE:
-
-        lawrenceMove(&AImove);
-        break;
-    default:
-
-        lawrenceMove(&AImove);
-        break;
-    }
-
-    if (isCheckMate) // IA have lost
-    {
-        std::cout << "AI checkMate" << std::endl;
-    }
-    else if (AImove == 0) {
-        std::cout << "error ai move = 0" << std::endl;
-    }        
-    else {
-        game.makeMove(AImove);
-
-        if (ISCAP(AImove))
+        switch (aiChoice)
         {
-            if (ENPASSCAP(AImove))
-            {
-                delete tiles[mailbox[ENPASSCAP(AImove)]].getPiece();
-                tiles[mailbox[ENPASSCAP(AImove)]].setPiece(NULL);
-            }
-            else
-            {
-                delete tiles[mailbox[TO(AImove)]].getPiece();
-                tiles[mailbox[TO(AImove)]].setPiece(NULL);
-            }
+        case defs::STOCKFISH:
+
+            stockfishMove(&AImove);
+
+            break;
+        case defs::LAWRENCE:
+
+            lawrenceMove(&AImove);
+            break;
+        default:
+
+            lawrenceMove(&AImove);
+            break;
         }
 
-        setLastMovePos(FROM(AImove), TO(AImove));
-
-        if (!castleMove(AImove))
-        {
-            tiles[mailbox[TO(AImove)]].setPiece(tiles[mailbox[FROM(AImove)]].getPiece());
-            tiles[mailbox[FROM(AImove)]].setPiece(NULL);
-            tiles[mailbox[TO(AImove)]].alignPiece();
-
-            if (PROMOTE(AImove))
-            {
-                tiles[mailbox[TO(AImove)]].promote(PROMOTE(AImove), pieceSurface[(PROMOTE(AImove)) - 1]);
-            }
+        if (AImove == 0) { // no move possible for IA
+            std::cout << (game.getBoard().side == WHITE ? "white" : "black") << " checkMate" << std::endl;
+            gameFinished = true;
         }
+        else {
+            game.makeMove(AImove);
 
-        game.getBoard().moves.clear();
-        game.generateMove(false);
-        aiThinking = false;
+            if (ISCAP(AImove))
+            {
+                if (ENPASSCAP(AImove))
+                {
+                    delete tiles[mailbox[ENPASSCAP(AImove)]].getPiece();
+                    tiles[mailbox[ENPASSCAP(AImove)]].setPiece(NULL);
+                }
+                else
+                {
+                    delete tiles[mailbox[TO(AImove)]].getPiece();
+                    tiles[mailbox[TO(AImove)]].setPiece(NULL);
+                }
+            }
 
-        has_verifyIfPlayerCanMove = false;
+            setLastMovePos(FROM(AImove), TO(AImove));
+
+            if (!castleMove(AImove))
+            {
+                tiles[mailbox[TO(AImove)]].setPiece(tiles[mailbox[FROM(AImove)]].getPiece());
+                tiles[mailbox[FROM(AImove)]].setPiece(NULL);
+                tiles[mailbox[TO(AImove)]].alignPiece();
+
+                if (PROMOTE(AImove))
+                {
+                    tiles[mailbox[TO(AImove)]].promote(PROMOTE(AImove), pieceSurface[(PROMOTE(AImove)) - 1]);
+                }
+            }
+
+            game.getBoard().moves.clear();
+            game.generateMove(false);
+            aiThinking = false;
+        }
+        hasVerify_player_canMove = false;
+
+        //timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode 
+        if (game.getBoard().side != WHITE) { //invert because of game.makeMove
+            timePlayer1 += secondForMovement;
+        }
+        else
+        {
+            timePlayer2 += secondForMovement;
+        }
     }
 }
 
@@ -700,8 +858,6 @@ void Gui::stockfishMove(Move* AImove) {
 
     if (str_move != "(none")
     {
-        game.addToHistoPos_stockfish(str_move);
-
         std::string oldPos_str = { str_move[0], str_move[1] };
         std::string newPos_str = { str_move[2], str_move[3] };
         std::string promote = { str_move[4] };
@@ -735,12 +891,11 @@ void Gui::stockfishMove(Move* AImove) {
                     piece = bN;
             }
             addPromoteBits(*AImove, piece);
-        }
-        
+        }        
         *AImove = utils::parseMove(*AImove, game);
+
+        game.addToHistoPos_stockfish(oldPos_str + newPos_str + (promote != " " ? promote : ""));
     }
-    else
-        isCheckMate = true;
 }
 
 bool Gui::castleMove(Move move)
@@ -816,10 +971,48 @@ void Gui::render()
     if (aiThinking) return;
 
     SDL_RenderClear(renderer);
+	const int size = SCREEN_SIZE / 8;
 
     for (int i=0; i<tiles.size(); i++)
     {
         tiles[i].render();
+    }
+
+    //boucle pour render le texte des coordonée
+    SDL_Rect rect;
+    rect.w = size / 7;
+    rect.h = size / 7;
+
+    //lettres
+    for (int i = 0; i < 8; i++)
+    {
+        textTexture = SDL_CreateTextureFromSurface(renderer, textSurface[i]);
+
+        //coordonée
+        rect.x = i * size + size - 10;
+        rect.y = size * 7 + size - 10;
+
+        //afficher
+        SDL_RenderCopy(renderer, textTexture, 0, &rect);
+
+        //libérer
+        SDL_DestroyTexture(textTexture);
+    }
+
+    //chiffres
+    for (int i = 8; i < 16; i++)
+    {
+        textTexture = SDL_CreateTextureFromSurface(renderer, textSurface[i]);
+
+        //coordonée
+        rect.x = 0;
+        rect.y = size * (GlobalStruct.bAIChoice != PLAYER ? (7 - (i - 8)) : (i - 8));
+
+        //afficher
+        SDL_RenderCopy(renderer, textTexture, 0, &rect);
+
+        //libérer
+        SDL_DestroyTexture(textTexture);
     }
 
     if (lastMoveChecker)
@@ -841,10 +1034,9 @@ void Gui::render()
         pieceMovingInfo.pieceMoving->render();
     }
 
+	
     if (promoting)
     {
-        const int size = SCREEN_SIZE / 8;
-
         for (int i=0; i<4; i++)
         {
             promoteToPieces[i].w = size;
@@ -895,11 +1087,25 @@ Gui::~Gui()
         SDL_FreeSurface(pieceSurface[i]);
     }
 
+	for (int i = 0; i < 16; i++) {
+		SDL_FreeSurface(textSurface[i]);
+	}
+
     SDL_FreeSurface(promoteSqrSurface);
     SDL_DestroyTexture(promoteTexture);
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+
+	//timer window
+	if (timedGame) {
+		timerWindow.~timer();
+	}
+
+	//text close
+	TTF_CloseFont(font);
+	TTF_Quit();
+
     SDL_Quit();
 }
 

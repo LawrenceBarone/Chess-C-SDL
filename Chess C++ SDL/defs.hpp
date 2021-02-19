@@ -59,15 +59,24 @@ enum : Sqr
 	a8 = 91, b8, c8, d8, e8, f8, g8, h8
 };
 
-static enum AIChoice : int {
+static enum TypeParty : int {
+	P_vs_AI,
+	P_vs_P,
+	AI_vs_AI
+};
+
+
+static enum Choice : int {
+	PLAYER,
 	STOCKFISH,
 	LAWRENCE
 };
 
 static enum GameStatus : int {
-	RUNNING,
-	P1_WIN,
-	P2_WIN
+	NONECHECK,
+	CHECK,
+	CHECKMATE,
+	STALEMATE
 };
 
 static std::string sqrChar[]

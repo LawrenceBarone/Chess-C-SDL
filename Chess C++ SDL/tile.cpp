@@ -13,12 +13,25 @@ Tile::Tile(int x, int y, int size, int f, int r, int s, bool isW, SDL_Renderer *
     sqr = s;
 }
 
-void Tile::initTexture(SDL_Surface* tileSurface[])
+void Tile::initTexture(SDL_Surface* tileSurface[], int i)
 {
-    if (colorWhite)
-        texture = SDL_CreateTextureFromSurface(renderer, tileSurface[0]);
-    else
-        texture = SDL_CreateTextureFromSurface(renderer, tileSurface[1]);
+	if (texture != NULL) {
+		SDL_DestroyTexture(texture);
+	}
+	if (colorWhite) {
+		//printf("%d : white\n", i);
+		texture = SDL_CreateTextureFromSurface(renderer, tileSurface[0]);
+	}
+	else {
+		//printf("%d : black\n", i);
+		texture = SDL_CreateTextureFromSurface(renderer, tileSurface[1]);
+	}
+}
+
+void Tile::invert(int size)
+{
+	position.y = (size * 7) - position.y;
+	position.x = (size * 7) - position.x;
 }
 
 bool Tile::isWhite()

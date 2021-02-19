@@ -957,8 +957,6 @@ void Game::clearPv(board::Game& game)
     }
 }
 
-
-
 std::string Game::getHistoPos_stockfish() {
 	return histoPos_stockfish;
 }
