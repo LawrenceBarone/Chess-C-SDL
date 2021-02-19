@@ -3,7 +3,7 @@
 #include <string> 
 #include <iostream>
 
-constexpr int SCREEN_WIDTH = 300;
+constexpr int SCREEN_WIDTH = 600;
 constexpr int SCREEN_HEIGHT = 200;
 
 namespace timer {

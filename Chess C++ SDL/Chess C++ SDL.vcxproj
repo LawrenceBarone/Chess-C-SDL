@@ -148,6 +148,7 @@
     <ClCompile Include="eval.cpp" />
     <ClCompile Include="gui.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="menu.cpp" />
     <ClCompile Include="piece.cpp" />
     <ClCompile Include="search.cpp" />
     <ClCompile Include="tile.cpp" />
@@ -158,6 +159,7 @@
     <ClInclude Include="defs.hpp" />
     <ClInclude Include="global.hpp" />
     <ClInclude Include="gui.hpp" />
+    <ClInclude Include="menu.hpp" />
     <ClInclude Include="piece.hpp" />
     <ClInclude Include="tile.hpp" />
     <ClInclude Include="timer.hpp" />
