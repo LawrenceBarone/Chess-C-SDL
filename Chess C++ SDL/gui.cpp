@@ -169,7 +169,10 @@ void Gui::initPieces()
 
 void Gui::init()
 {
-    skill_lvl = GlobalStruct.eloChoice;
+    skill_lvl = GlobalStruct.eloStockfish;
+
+    extern int maxDepth;
+    maxDepth = stoi(GlobalStruct.depthLawrence);
 
     ConnectToEngine("stockfish.exe", skill_lvl);
 
@@ -205,9 +208,6 @@ void Gui::init()
     else {
         timerWindow.~timer();
     }
-
-    
-
     
     SDL_Init(SDL_INIT_EVERYTHING);
 

@@ -186,9 +186,10 @@ int main(int argc, char* argv[])
 	bool quit = false;
 	SDL_Event e;
 
-	GlobalStruct.wAIChoice = "PLAYER";
-	GlobalStruct.bAIChoice = "STOCKFISH";
-	GlobalStruct.eloChoice = "1200";
+	GlobalStruct.wAIChoice = defs::PLAYER;
+	GlobalStruct.bAIChoice = defs::STOCKFISH;
+	GlobalStruct.eloStockfish = "0";
+	GlobalStruct.depthLawrence = "3";
 	GlobalStruct.time = "0+0";
 	GlobalStruct.ModedGame = "NONE";
 
@@ -391,7 +392,7 @@ int main(int argc, char* argv[])
 						FlechePosDW.w = 0;
 						FlechePosDW.h = 0;
 						hw = true;
-						GlobalStruct.wAIChoice = "PLAYER";
+						GlobalStruct.wAIChoice = defs::PLAYER;
 						
 					}
 				}
@@ -403,7 +404,7 @@ int main(int argc, char* argv[])
 						tHn = SDL_CreateTextureFromSurface(renderer, sHn);
 						FlechePosGB.w = 0;
 						FlechePosGB.h = 0;
-						GlobalStruct.bAIChoice = "PLAYER";
+						GlobalStruct.bAIChoice = defs::PLAYER;
 						
 						hn = true;
 					}
@@ -425,7 +426,7 @@ int main(int argc, char* argv[])
 						FlechePosDW.y = 315;
 						FlechePosDW.w = 30;
 						FlechePosDW.h = 25;
-							GlobalStruct.wAIChoice = "STOCKFISH";
+							GlobalStruct.wAIChoice = defs::STOCKFISH;
 							
 							sFlecheDW = IMG_Load("imgs/flecheBlanche.png");
 							tFlecheDW = SDL_CreateTextureFromSurface(renderer, sFlecheDW);
@@ -441,7 +442,7 @@ int main(int argc, char* argv[])
 						FlechePosGB.w = 30;
 						FlechePosGB.h = 25;
 
-							GlobalStruct.bAIChoice = "STOCKFISH";
+							GlobalStruct.bAIChoice = defs::STOCKFISH;
 						
 							sFlecheGB = IMG_Load("imgs/flecheNoir.png");
 							tFlecheGB = SDL_CreateTextureFromSurface(renderer, sFlecheGB);
@@ -460,7 +461,7 @@ int main(int argc, char* argv[])
 						FlechePosDW.h = 25;
 						sFlecheDW = IMG_Load("imgs/flecheBlanche.png");
 						tFlecheDW = SDL_CreateTextureFromSurface(renderer, sFlecheDW);
-							GlobalStruct.wAIChoice = "LAWRENCE";
+							GlobalStruct.wAIChoice = defs::LAWRENCE;
 						
 						
 					}
@@ -473,7 +474,7 @@ int main(int argc, char* argv[])
 						FlechePosGB.y = 415;
 						FlechePosGB.w = 30;
 						FlechePosGB.h = 25;
-							GlobalStruct.bAIChoice = "LAWRENCE";
+							GlobalStruct.bAIChoice = defs::LAWRENCE;
 						
 							sFlecheGB = IMG_Load("imgs/flecheNoir.png");
 							tFlecheGB = SDL_CreateTextureFromSurface(renderer, sFlecheGB);
@@ -516,7 +517,7 @@ int main(int argc, char* argv[])
 				}
 				//Time Choice
 				//Do 9 struct of the pos , or do the calcul splits of 1 square into 9 squares .
-				if (Mx >= NoTPos.x && Mx <= NoTPos.x + NoTPos.w / 3 && My >= NoTPos.y && My <= NoTPos.y + NoTPos.h / 3) {
+				if (Mx >= NoTPos.x && Mx <= NoTPos.x + NoTPos.w && My >= NoTPos.y && My <= NoTPos.y + NoTPos.h) {
 					GlobalStruct.time = "0+0";
 					a = 0;
 				}

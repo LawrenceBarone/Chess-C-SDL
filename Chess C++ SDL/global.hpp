@@ -9,13 +9,12 @@ using namespace std;
 
 typedef struct mdata_struct
 {
-    string wChoice;
-    string bChoice;
-    defs::Choice wAIChoice = defs::Choice::LAWRENCE;
-    defs::Choice bAIChoice = defs::Choice::LAWRENCE;
-    string eloChoice = "0";
-    string time = "15+5";
-    string ModedGame = "NONE";
+    defs::Choice wAIChoice;
+    defs::Choice bAIChoice;
+    string eloStockfish;
+    string depthLawrence;
+    string time;
+    string ModedGame;
 } mdata_struct;
 
 extern mdata_struct GlobalStruct;
