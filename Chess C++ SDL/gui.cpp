@@ -1,5 +1,5 @@
 #include "gui.hpp"
-
+#include "menu.hpp"
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <string>
@@ -296,6 +296,9 @@ void Gui::run()
     }
 
     CloseConnection(); // close stockfish
+	Gui::~Gui();
+	menu::menu m;
+	m.run();
 }
 
 void Gui::TimerUpdate() {
