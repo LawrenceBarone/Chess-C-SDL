@@ -128,12 +128,14 @@ namespace timer {
 	}
 
 	timer::~timer() {
+		if (window != NULL)
+		{
+			SDL_FreeSurface(textSurface[0]);
+			SDL_FreeSurface(textSurface[1]);
+			SDL_DestroyTexture(textTexture);
 
-		SDL_FreeSurface(textSurface[0]);
-		SDL_FreeSurface(textSurface[1]);
-		SDL_DestroyTexture(textTexture);
-
-		SDL_DestroyRenderer(renderer);
+			SDL_DestroyRenderer(renderer);
+		}
 		SDL_DestroyWindow(window);
 
 		//text close

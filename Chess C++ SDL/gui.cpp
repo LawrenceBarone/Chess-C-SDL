@@ -270,7 +270,7 @@ void Gui::run()
         case defs::AI_vs_AI:
             
             update_AI();
-            SDL_Delay(990);
+            //SDL_Delay(990);
 
             break;
         default:
@@ -883,12 +883,20 @@ void Gui::stockfishMove(Move* AImove) {
                     piece = wQ;
                 if (promote == "n")
                     piece = wN;
+				if (promote == "b")
+					piece = wB;
+				if (promote == "r")
+					piece = wR;
             }
             else {
                 if (promote == "q")
                     piece = bQ;
                 if (promote == "n")
-                    piece = bN;
+                    piece = bN; //////////////////////////////////////////////////////////////////////////////add bishop
+				if (promote == "b")
+					piece = bB;
+				if (promote == "r")
+					piece = bR;
             }
             addPromoteBits(*AImove, piece);
         }        
