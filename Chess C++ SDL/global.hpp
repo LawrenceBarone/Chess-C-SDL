@@ -8,8 +8,7 @@ using namespace std;
 
 typedef struct mdata_struct
 {
-    string wChoice;
-    string bChoice;
+
     string wAIChoice;
     string bAIChoice;
     string eloChoice;
