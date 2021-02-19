@@ -36,6 +36,7 @@ public:
     ~Gui();
     void init();
     void run();
+    void TimerUpdate();
     void playerCanPlay();
     void update_AI();
     void render();

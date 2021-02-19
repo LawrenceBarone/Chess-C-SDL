@@ -182,7 +182,7 @@ int main(int argc, char* argv[])
 	bool quit = false;
 	SDL_Event e;
 
-	GlobalStruct.wAIChoice = defs::PLAYER;
+	GlobalStruct.wAIChoice = defs::STOCKFISH;
 	GlobalStruct.bAIChoice = defs::STOCKFISH;
 	GlobalStruct.eloStockfish = "0";
 	GlobalStruct.depthLawrence = "2";

@@ -28,6 +28,7 @@ vector<std::string> lastMovesCheck;
 
 bool gameFinished = false;
 bool hasVerify_player_canMove = false;
+bool timerBool = true;
 
 static int aiThreadSeach(void* data)
 {
@@ -268,9 +269,19 @@ void Gui::run()
 
             break;
         case defs::AI_vs_AI:
-            
-            update_AI();
-            SDL_Delay(990);
+            SDL_Event e;
+
+            if (SDL_PollEvent(&e))
+            {
+                if (e.type == SDL_QUIT || (e.type == SDL_WINDOWEVENT && e.window.event == SDL_WINDOWEVENT_CLOSE))
+                {
+                    running = false;
+                }
+                else {
+                    update_AI();
+                    SDL_Delay(990);
+                }
+            }
 
             break;
         default:
@@ -279,39 +290,50 @@ void Gui::run()
 
         render();
 
-
-		//timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode
-		if (timedGame && ! gameFinished) {
-			float deltaTime = (SDL_GetTicks() - mTicksCount);
-			mTicksCount = SDL_GetTicks();
-
-			if (game.getBoard().side == WHITE) { //wich side is playing
-				timePlayer1 -= deltaTime;
-				if (timePlayer1 <= 0) {
-					//player 1 has no time left
-                    gameFinished = true;
-
-                    cout << "player 1 has no time left" << endl;
-				}
-			}
-			else
-			{
-				timePlayer2 -= deltaTime;
-				if (timePlayer2 <= 0) {
-					//player 2 has no time left
-                    gameFinished = true;
-
-                    cout << "player 2 has no time left" << endl;
-				}
-			}
-
-			timerWindow.render(timePlayer1, timePlayer2);
-		}
+        TimerUpdate();
 
         SDL_Delay(10);
     }
 
     CloseConnection(); // close stockfish
+}
+
+void Gui::TimerUpdate() {
+    if (timerBool) {
+        timerBool = false;
+
+        //timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode || timemode
+        if (timedGame && !gameFinished) {
+            float deltaTime = (SDL_GetTicks() - mTicksCount);
+            mTicksCount = SDL_GetTicks();
+
+            if (game.getBoard().side == WHITE) { //wich side is playing
+                timePlayer1 -= deltaTime;
+                if (timePlayer1 <= 0) {
+                    //player 1 has no time left
+                    gameFinished = true;
+
+                    cout << "player 1 has no time left" << endl;
+                }
+            }
+            else
+            {
+                timePlayer2 -= deltaTime;
+                if (timePlayer2 <= 0) {
+                    //player 2 has no time left
+                    gameFinished = true;
+
+                    cout << "player 2 has no time left" << endl;
+                }
+            }
+
+            timerWindow.render(timePlayer1, timePlayer2);
+        }
+    }
+
+    if (SDL_GetTicks() - mTicksCount > 1000)
+        timerBool = true;
+   
 }
 
 void Gui::checkGameStatus() {
@@ -365,7 +387,7 @@ void Gui::handleInput()
 
     if (SDL_PollEvent(&e))
     {
-        if (e.type == SDL_QUIT)
+        if (e.type == SDL_QUIT || (e.type == SDL_WINDOWEVENT && e.window.event == SDL_WINDOWEVENT_CLOSE))
         {
             running = false;
             return;
@@ -410,11 +432,6 @@ void Gui::handleKeyDown(const SDL_Event& e)
         {
 			//n for new game
             newGame();
-            break;
-        }
-        case SDLK_SPACE: 
-        {
-            running = false;
             break;
         }
     }
@@ -888,12 +905,20 @@ void Gui::stockfishMove(Move* AImove) {
                     piece = wQ;
                 if (promote == "n")
                     piece = wN;
+                if (promote == "b")
+                    piece = wB;
+                if (promote == "r")
+                    piece = wR;
             }
             else {
                 if (promote == "q")
                     piece = bQ;
                 if (promote == "n")
                     piece = bN;
+                if (promote == "b")
+                    piece = bB;
+                if (promote == "r")
+                    piece = bR;
             }
             addPromoteBits(*AImove, piece);
         }        
@@ -1102,7 +1127,7 @@ Gui::~Gui()
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
 
-	//timer window
+	////timer window
 	//if (timedGame) {
 	//	timerWindow.~timer();
 	//}
