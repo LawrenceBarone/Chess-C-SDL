@@ -146,10 +146,6 @@ void consoleInterface()
 }
 #endif
 
-void SetGame() {
-
-}
-
 void runChess() {
 #ifdef GUI
 	gui::Gui gui;
@@ -186,10 +182,10 @@ int main(int argc, char* argv[])
 	bool quit = false;
 	SDL_Event e;
 
-	GlobalStruct.wAIChoice = defs::PLAYER;
+	GlobalStruct.wAIChoice = defs::STOCKFISH;
 	GlobalStruct.bAIChoice = defs::STOCKFISH;
 	GlobalStruct.eloStockfish = "0";
-	GlobalStruct.depthLawrence = "3";
+	GlobalStruct.depthLawrence = "2";
 	GlobalStruct.time = "0+0";
 	GlobalStruct.ModedGame = "NONE";
 
@@ -365,6 +361,8 @@ int main(int argc, char* argv[])
 	bool hw = true, hn = false;
 	//Already IA W or B
 	bool alreadyW = false, alreadyB = true;
+	//Global Struct vars
+	int eloStock = 0, eloLaw = 0;
 
 	while (a) {
 		SDL_GetMouseState(&Mx, &My);
@@ -378,7 +376,7 @@ int main(int argc, char* argv[])
 				//White Human or computer
 				if (Mx >= WPos.x && Mx <= WPos.x + WPos.w && My >= WPos.y && My <= WPos.y + WPos.h) {
 					if (hw == true) {
-						
+						GlobalStruct.wAIChoice = defs::STOCKFISH;
 						sH = IMG_Load("imgs/computerblanc.png");
 						tH = SDL_CreateTextureFromSurface(renderer, sH);
 						//Upload IA White
@@ -410,6 +408,7 @@ int main(int argc, char* argv[])
 					}
 					else {
 						//Upload IA Black
+						GlobalStruct.bAIChoice = defs::STOCKFISH;
 						sHn = IMG_Load("imgs/computerblack.png");
 						tHn = SDL_CreateTextureFromSurface(renderer, sHn);
 						hn = false;
@@ -489,6 +488,11 @@ int main(int argc, char* argv[])
 					sprintf_s(eloS, "%d", countS);
 					sEloStockfish = TTF_RenderText_Solid(sans, eloS, black);
 					tEloStockfish = SDL_CreateTextureFromSurface(renderer, sEloStockfish);
+					if (eloStock < 20) {
+						eloStock++;
+						GlobalStruct.eloStockfish = eloStock;
+					}
+					
 					
 				}
 				else if (Mx >= StockSignPos.x && Mx <= StockSignPos.x + StockSignPos.w && My >= StockSignPos.y && My <= StockSignPos.y + StockSignPos.h) {
@@ -497,6 +501,10 @@ int main(int argc, char* argv[])
 					sprintf_s(eloS, "%d", countS);
 					sEloStockfish = TTF_RenderText_Solid(sans, eloS, black);
 					tEloStockfish = SDL_CreateTextureFromSurface(renderer, sEloStockfish);
+					if (eloStock > 0) {
+						eloStock--;
+						GlobalStruct.eloStockfish = eloStock;
+					}
 					
 				}
 				//Lawrence Signs elo
@@ -505,6 +513,11 @@ int main(int argc, char* argv[])
 					sprintf_s(eloL, "%d", countL);
 					sxtLaw = TTF_RenderText_Solid(sans, eloL, black);
 					txtLaw = SDL_CreateTextureFromSurface(renderer, sxtLaw);
+					if (eloLaw < 4) {
+						eloLaw++;
+						GlobalStruct.depthLawrence = eloLaw;
+					}
+					
 
 				}
 				else if (Mx >= LawSignPos.x && Mx <= LawSignPos.x + LawSignPos.w && My >= LawSignPos.y && My <= LawSignPos.y + LawSignPos.h) {
@@ -513,6 +526,10 @@ int main(int argc, char* argv[])
 					sprintf_s(eloL, "%d", countL);
 					sxtLaw = TTF_RenderText_Solid(sans, eloL, black);
 					txtLaw = SDL_CreateTextureFromSurface(renderer, sxtLaw);
+					if (eloLaw > 0) {
+						eloLaw--;
+						GlobalStruct.depthLawrence = eloLaw;
+					}
 
 				}
 				//Time Choice
@@ -657,7 +674,6 @@ int main(int argc, char* argv[])
 	SDL_DestroyWindow(window);
 	close();
 
-	SetGame();
 	runChess();
 	return 0;
 }

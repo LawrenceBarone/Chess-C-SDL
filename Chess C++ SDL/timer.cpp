@@ -1,6 +1,7 @@
 #include "timer.hpp"
 #include <SDL_image.h>
 #include <string> 
+#include <iostream>
 
 constexpr int SCREEN_WIDTH = 600;
 constexpr int SCREEN_HEIGHT = 200;
@@ -16,7 +17,7 @@ namespace timer {
 		else
 		{
 			//create the window
-			window = SDL_CreateWindow("Chess Timer", 660, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+			window = SDL_CreateWindow("Chess Timer", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 
 			if (window == NULL)
 			{
@@ -44,7 +45,6 @@ namespace timer {
 	void timer::render(int player1, int player2) {
 		int min;
 		int second;
-
 		SDL_RenderClear(renderer);
 
 		SDL_FreeSurface(textSurface[0]);
@@ -128,14 +128,12 @@ namespace timer {
 	}
 
 	timer::~timer() {
-		if (window != NULL)
-		{
-			SDL_FreeSurface(textSurface[0]);
-			SDL_FreeSurface(textSurface[1]);
-			SDL_DestroyTexture(textTexture);
+		
+		SDL_FreeSurface(textSurface[0]);
+		SDL_FreeSurface(textSurface[1]);
+		SDL_DestroyTexture(textTexture);
 
-			SDL_DestroyRenderer(renderer);
-		}
+		SDL_DestroyRenderer(renderer);
 		SDL_DestroyWindow(window);
 
 		//text close
