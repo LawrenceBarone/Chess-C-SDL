@@ -12,7 +12,7 @@ namespace menu {
 		quit = false;
 		SDL_Event e;
 
-		GlobalStruct.wAIChoice = defs::STOCKFISH;
+		GlobalStruct.wAIChoice = defs::PLAYER;
 		GlobalStruct.bAIChoice = defs::STOCKFISH;
 		GlobalStruct.eloStockfish = "0";
 		GlobalStruct.depthLawrence = "2";

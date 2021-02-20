@@ -37,6 +37,7 @@ public:
     void init();
     void run();
     void TimerUpdate();
+    void EndGameShowPic(int x, int side);
     void playerCanPlay();
     void update_AI();
     void render();
@@ -90,6 +91,8 @@ private:
 	int secondForMovement;
 	bool timedGame;
 	timer::timer timerWindow;
+    SDL_Surface* sEndgame = NULL;
+    SDL_Texture* tEndgame = NULL;//endgame window
 };
 
 struct ThreadData

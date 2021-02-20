@@ -62,7 +62,7 @@ namespace menu {
 		//Already IA W or B
 		bool alreadyW = false, alreadyB = true;
 		//Global Struct vars
-		int eloStock = 0, eloLaw = 0;
+		int eloStock = 0, eloLaw = 2;
 	};
 }
 

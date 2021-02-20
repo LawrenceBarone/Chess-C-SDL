@@ -280,6 +280,7 @@ void Gui::run()
                     handleKeyDown(e);
                 }     
             }
+            Sleep(500);
             update_AI();
             break;
         default:
@@ -314,7 +315,7 @@ void Gui::TimerUpdate() {
                 if (timePlayer1 <= 0) {
                     //player 1 has no time left
                     gameFinished = true;
-
+                    EndGameShowPic(1, 0);
                     cout << "player 1 has no time left" << endl;
                 }
             }
@@ -324,7 +325,7 @@ void Gui::TimerUpdate() {
                 if (timePlayer2 <= 0) {
                     //player 2 has no time left
                     gameFinished = true;
-
+                    EndGameShowPic(1,1);
                     cout << "player 2 has no time left" << endl;
                 }
             }
@@ -332,21 +333,63 @@ void Gui::TimerUpdate() {
             timerWindow.render(timePlayer1, timePlayer2);
         }
     }
-
+    
     if (SDL_GetTicks() - mTicksCount > 1000)
         timerBool = true;
    
 }
 
+void Gui::EndGameShowPic(int x,int side) {
+
+    cout << "enter in Engame" << endl;
+
+    switch (x) {
+        
+    case 0: // Winner black or white (time or check)
+        cout << "CHECKMATE" << endl;
+        if (side == 0) {
+
+            sEndgame = IMG_Load("imgs/blackWinCheck.png");
+          
+        }
+        else {
+            sEndgame = IMG_Load("imgs/whiteWinCheck.png");
+         
+        }
+        break;
+    case 1: //Winner time
+        cout << "TIME" << endl;
+        if (side == 0) {
+            sEndgame = IMG_Load("imgs/blackWinTime.png");
+        }
+        else {
+            sEndgame = IMG_Load("imgs/whiteWinTime.png");
+           
+        }
+        break;
+    case 2: //Draw
+        cout << "DRAW" << endl;
+            sEndgame = IMG_Load("imgs/draw.png");
+           
+        break;
+    }
+    render();
+    gameFinished = true;
+
+}
+
 void Gui::checkGameStatus() {
     std::string lastMove = "";
+    int sideBorW = NULL;
     switch (checkMate(game.getHistoPos_stockfish()))
     {
     case CHECKMATE:
-        std::cout << (game.getBoard().side == WHITE ? "white" : "black") << " checkmate" << std::endl;
+        std::cout << (game.getBoard().side == WHITE ? sideBorW = 1 : sideBorW = 0) << " checkmate" << std::endl;
+        EndGameShowPic(0,sideBorW);
         gameFinished = true;
         break;
     case STALEMATE:
+        EndGameShowPic(2,sideBorW);
         std::cout << "stalemate" << std::endl;
         gameFinished = true;
         break;
@@ -368,6 +411,7 @@ void Gui::checkGameStatus() {
                 (lastMovesCheck[1] == lastMovesCheck[3] && lastMovesCheck[3] == lastMovesCheck[5])) {
 
                 std::cout << "stalemate" << std::endl;
+                EndGameShowPic(2, NULL);
                 gameFinished = true;
             }
         }
@@ -399,6 +443,7 @@ void Gui::handleInput()
 
         if (e.type == SDL_KEYDOWN)
         {
+            cout << "Clavier" << endl;
             handleKeyDown(e);
         }
         else if (e.type == SDL_MOUSEBUTTONDOWN)
@@ -432,12 +477,14 @@ void Gui::handleKeyDown(const SDL_Event& e)
     {
         case SDLK_n:
         {
+            cout << "N was pressed" << endl;
 			//n for new game
             newGame();
             break;
         }
         case SDLK_SPACE:
         {
+            cout << "Space was pressed" << endl;
             running = false;
             break;
         }
@@ -447,6 +494,10 @@ void Gui::handleKeyDown(const SDL_Event& e)
 void Gui::newGame()
 {
     clearPieces();
+    sEndgame = NULL;
+    gameFinished = false;
+    timePlayer1 = stoi(GlobalStruct.time.substr(0, GlobalStruct.time.find('+'))) * 60 * 1000;
+    timePlayer2 = timePlayer1;
     for(int i=wP; i<=bK; i++)
     {
         game.getBoard().pieces[i].clear();
@@ -1005,6 +1056,21 @@ void Gui::update_AI()
 
 void Gui::render()
 {
+
+    if (sEndgame != NULL) {
+        SDL_RenderClear(renderer);
+        cout << "End game " << endl;
+        SDL_Rect RestartPos;
+        RestartPos.x = 100;
+        RestartPos.y = 100;
+        RestartPos.w = 400;
+        RestartPos.h = 300;
+        tEndgame = SDL_CreateTextureFromSurface(renderer, sEndgame);
+        SDL_RenderCopy(renderer, tEndgame, NULL, &RestartPos);
+        SDL_DestroyTexture(tEndgame);
+        SDL_RenderPresent(renderer);
+        return;
+    }
     if (aiThinking) return;
 
     SDL_RenderClear(renderer);
@@ -1098,7 +1164,8 @@ void Gui::render()
             SDL_DestroyTexture(pTexture);
         }
     }
-
+    
+    
     SDL_RenderPresent(renderer);
 }
 
@@ -1134,6 +1201,8 @@ Gui::~Gui()
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
 
+    SDL_FreeSurface(sEndgame);
+    SDL_DestroyTexture(tEndgame);
 
 	//text close
 	TTF_CloseFont(font);
