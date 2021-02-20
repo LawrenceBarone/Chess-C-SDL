@@ -698,7 +698,8 @@ void Gui::movePiece(const SDL_Event& e) //when player move a piece
                             toPos = sqrChar[i];
                     }
                     game.addToHistoPos_stockfish(fromPos + toPos);
-                    hasVerify_player_canMove = false;
+                    if(typeParty == P_vs_P)
+                        hasVerify_player_canMove = false;
 				}
 				else {
 					pieceMovingInfo.tile->alignPiece();
@@ -862,7 +863,8 @@ void Gui::handlePromoteMove()
 	if(typeParty == P_vs_P){
 	    switchSide();
 	}
-    hasVerify_player_canMove = false;
+    if (typeParty == P_vs_P)
+        hasVerify_player_canMove = false;
 }
 
 void Gui::setLastMovePos(int from, int to)
