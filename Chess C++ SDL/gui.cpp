@@ -227,10 +227,27 @@ void Gui::init()
         lastmovePosition.lastmovePosition[i].h = SCREEN_SIZE / 8;
     }
 
-    const std::string Startfen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    
+    if (GlobalStruct.ModedGame == "SICILIAN") {
+        const std::string Startfen = "rnbqkbnr/pp2pppp/3p4/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 1";
+        game.addToHistoPos_stockfish("e4e2 e7e5 g1f3 b8c6 f1c4");
+        game.init();
+        utils::loadFen(Startfen, game);
+    }
+    else if (GlobalStruct.ModedGame == "ITALIAN") {
+        const std::string Startfen = "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1";
+        game.addToHistoPos_stockfish("e4e2 c7c5 g1f3 d7d6");
+        game.init();
+        utils::loadFen(Startfen, game);
+    }
+    else {
+        const std::string Startfen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        game.init();
+        utils::loadFen(Startfen, game);
+    }
+    
 
-    game.init();
-    utils::loadFen(Startfen, game);
+    
     game.setPositionKey();
     game.generateMove(false);
 
@@ -263,12 +280,13 @@ void Gui::run()
         switch (typeParty)
         {
         case defs::P_vs_AI:
-
+            cout << "p vs ia " << endl;
             handleInput();
             update_AI();
 
             break;
         case defs::P_vs_P:
+            cout << "pvp " << endl;
             handleInput();
 
             break;
@@ -294,7 +312,7 @@ void Gui::run()
         if (typeParty != AI_vs_AI) {
             TimerUpdate();
         }
-
+        SDL_Delay(10);
     }
 
     CloseConnection(); // close stockfish
@@ -528,10 +546,26 @@ void Gui::newGame()
         cout << "Its PVP and its black side" << endl;
         switchSide();
     }
-    const std::string Startfen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    utils::loadFen(Startfen, game);
-    game.setPositionKey();
-    game.generateMove(false);
+    if (GlobalStruct.ModedGame == "SICILIAN") {
+        const std::string Startfen = "rnbqkbnr/pp2pppp/3p4/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 1";
+        game.addToHistoPos_stockfish("e4e2 e7e5 g1f3 b8c6 f1c4");
+        utils::loadFen(Startfen, game);
+        game.setPositionKey();
+        game.generateMove(false);
+    }else if (GlobalStruct.ModedGame == "ITALIAN") {
+        const std::string Startfen = "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1";
+        game.addToHistoPos_stockfish("e4e2 c7c5 g1f3 d7d6");
+        utils::loadFen(Startfen, game);
+        game.setPositionKey();
+        game.generateMove(false);
+    }
+    else {
+        const std::string Startfen = "rnbqkbnr/ppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        utils::loadFen(Startfen, game);
+        game.setPositionKey();
+        game.generateMove(false);
+    }
+    
     initPieces();
     lastMoveChecker = false;
     
