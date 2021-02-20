@@ -202,7 +202,6 @@ void Gui::init()
    
     //timer window
     if (timedGame && typeParty != AI_vs_AI) {
-        cout << "IA VS IA timer" << endl;
         timePlayer1 = stoi(GlobalStruct.time.substr(0, GlobalStruct.time.find('+'))) * 60 * 1000;
         timePlayer2 = timePlayer1;
 
@@ -227,22 +226,20 @@ void Gui::init()
         lastmovePosition.lastmovePosition[i].h = SCREEN_SIZE / 8;
     }
 
-    
+    game.init();
     if (GlobalStruct.ModedGame == "SICILIAN") {
         const std::string Startfen = "rnbqkbnr/pp2pppp/3p4/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 1";
-        game.addToHistoPos_stockfish("e4e2 e7e5 g1f3 b8c6 f1c4");
-        game.init();
+        game.addToHistoPos_stockfish("e2e4 c7c5 g1f3 d7d6");
         utils::loadFen(Startfen, game);
     }
     else if (GlobalStruct.ModedGame == "ITALIAN") {
         const std::string Startfen = "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1";
-        game.addToHistoPos_stockfish("e4e2 c7c5 g1f3 d7d6");
-        game.init();
+        game.addToHistoPos_stockfish("e2e4 e7e5 g1f3 b8c6 f1c4");
         utils::loadFen(Startfen, game);
+        game.getBoard().side ^= 1;
     }
     else {
         const std::string Startfen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-        game.init();
         utils::loadFen(Startfen, game);
     }
     
@@ -262,10 +259,15 @@ void Gui::init()
         switchSide();
 	}
 
+    if (GlobalStruct.ModedGame == "SICILIAN")
+        switchSide();
+
 	//IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA || //IA vs IA ||
 	if (typeParty == AI_vs_AI) {
         AI = WHITE;
 	}
+    aiThinking = false;
+    gameFinished = false;
 }
 
 //Launch General User interface
@@ -280,13 +282,11 @@ void Gui::run()
         switch (typeParty)
         {
         case defs::P_vs_AI:
-            cout << "p vs ia " << endl;
             handleInput();
             update_AI();
 
             break;
         case defs::P_vs_P:
-            cout << "pvp " << endl;
             handleInput();
 
             break;
@@ -366,8 +366,6 @@ void Gui::TimerUpdate() {
 
 void Gui::EndGameShowPic(int x,int side) {
 
-    cout << "enter in Engame" << endl;
-
     if (typeParty == P_vs_P && x != 1) {
         if (side == 1) {
             side = 0;
@@ -407,51 +405,54 @@ void Gui::EndGameShowPic(int x,int side) {
            
         break;
     }
-    render();
     gameFinished = true;
-
+    render();
 }
 
 void Gui::checkGameStatus() {
     std::string lastMove = "";
     int sideBorW = NULL;
-    switch (checkMate(game.getHistoPos_stockfish()))
-    {
-    case CHECKMATE:
-        std::cout << (game.getBoard().side == WHITE ? sideBorW = 1 : sideBorW = 0) << " checkmate" << std::endl;
-        EndGameShowPic(0,sideBorW);
-        gameFinished = true;
-        break;
-    case STALEMATE:
-        EndGameShowPic(2,sideBorW);
-        std::cout << "stalemate" << std::endl;
-        gameFinished = true;
-        break;
-    case CHECK:
-        
+    if (!gameFinished) {
+        switch (checkMate(game.getHistoPos_stockfish()))
+        {
+        case CHECKMATE:
+            if (typeParty != P_vs_P)
+                game.getBoard().side ^= 1;
+            std::cout << (game.getBoard().side == WHITE ? sideBorW = 1 : sideBorW = 0) << " checkmate" << std::endl;
+            EndGameShowPic(0, sideBorW);
+            gameFinished = true;
+            break;
+        case STALEMATE:
+            EndGameShowPic(2, sideBorW);
+            std::cout << "stalemate" << std::endl;
+            gameFinished = true;
+            break;
+        case CHECK:
 
-        if (lastMovesCheck.size() >= 6) {
-            lastMovesCheck.erase(lastMovesCheck.begin());
-            
-        }
 
-        for (int i = game.getHistoPos_stockfish().size() - 2; i > 0 && game.getHistoPos_stockfish()[i] != ' '; i--) {
-            lastMove += game.getHistoPos_stockfish()[i];
-        }
-        lastMovesCheck.push_back(lastMove);
+            if (lastMovesCheck.size() >= 6) {
+                lastMovesCheck.erase(lastMovesCheck.begin());
 
-        if (lastMovesCheck.size() >= 6) {
-            if ((lastMovesCheck[0] == lastMovesCheck[2] && lastMovesCheck[2] == lastMovesCheck[4]) &&
-                (lastMovesCheck[1] == lastMovesCheck[3] && lastMovesCheck[3] == lastMovesCheck[5])) {
-
-                std::cout << "stalemate" << std::endl;
-                EndGameShowPic(2, NULL);
-                gameFinished = true;
             }
+
+            for (int i = game.getHistoPos_stockfish().size() - 2; i > 0 && game.getHistoPos_stockfish()[i] != ' '; i--) {
+                lastMove += game.getHistoPos_stockfish()[i];
+            }
+            lastMovesCheck.push_back(lastMove);
+
+            if (lastMovesCheck.size() >= 6) {
+                if ((lastMovesCheck[0] == lastMovesCheck[2] && lastMovesCheck[2] == lastMovesCheck[4]) &&
+                    (lastMovesCheck[1] == lastMovesCheck[3] && lastMovesCheck[3] == lastMovesCheck[5])) {
+
+                    std::cout << "stalemate" << std::endl;
+                    EndGameShowPic(2, NULL);
+                    gameFinished = true;
+                }
+            }
+            break;
+        default:
+            break;
         }
-        break;
-    default:
-        break;
     }
 }
 
@@ -459,7 +460,6 @@ void Gui::handleInput()
 {
     if (!hasVerify_player_canMove) {
         hasVerify_player_canMove = true;
-        cout << "enter in handleInput" << endl;
         checkGameStatus();
     }
 
@@ -473,13 +473,14 @@ void Gui::handleInput()
             return;
         }
 
-        if (aiThinking) return;
-
         if (e.type == SDL_KEYDOWN)
         {
             handleKeyDown(e);
         }
-        else if (e.type == SDL_MOUSEBUTTONDOWN)
+
+        if (aiThinking) return;
+
+        if (e.type == SDL_MOUSEBUTTONDOWN)
         {
 			if(!gameFinished)
 			    handleMouseDown(e);
@@ -542,24 +543,24 @@ void Gui::newGame()
     game.getBoard().moves.clear();
 
     if (typeParty == P_vs_P && game.getBoard().side == BLACK) {
-        cout << "Its PVP and its black side" << endl;
+        
         switchSide();
     }
     if (GlobalStruct.ModedGame == "SICILIAN") {
         const std::string Startfen = "rnbqkbnr/pp2pppp/3p4/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 1";
-        game.addToHistoPos_stockfish("e4e2 e7e5 g1f3 b8c6 f1c4");
+        game.addToHistoPos_stockfish("e2e4 c7c5 g1f3 d7d6");
         utils::loadFen(Startfen, game);
         game.setPositionKey();
         game.generateMove(false);
     }else if (GlobalStruct.ModedGame == "ITALIAN") {
         const std::string Startfen = "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1";
-        game.addToHistoPos_stockfish("e4e2 c7c5 g1f3 d7d6");
+        game.addToHistoPos_stockfish("e2e4 e7e5 g1f3 b8c6 f1c4");
         utils::loadFen(Startfen, game);
         game.setPositionKey();
         game.generateMove(false);
     }
     else {
-        const std::string Startfen = "rnbqkbnr/ppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        const std::string Startfen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         utils::loadFen(Startfen, game);
         game.setPositionKey();
         game.generateMove(false);
@@ -1120,7 +1121,6 @@ void Gui::render()
 
     if (sEndgame != NULL) {
         SDL_RenderClear(renderer);
-        cout << "End game " << endl;
         SDL_Rect RestartPos;
         RestartPos.x = 100;
         RestartPos.y = 100;
@@ -1132,7 +1132,7 @@ void Gui::render()
         SDL_RenderPresent(renderer);
         return;
     }
-    if (aiThinking) return;
+    //if (aiThinking) return;
 
     SDL_RenderClear(renderer);
 	const int size = SCREEN_SIZE / 8;
