@@ -112,17 +112,18 @@ defs::GameStatus checkMate(std::string position)
     } while (read >= sizeof(buffer));
 
     n = result.find("Checkers: ");
-    if (result[n + 10] != '\r')
-        output = CHECK;
-    
-    n = result.find("Legal moves:");
-    if (result[n + 13] == '\r') {
-        if (output == CHECK)
-            output = CHECKMATE;
-        else
-            output = STALEMATE;
-    }
+    if (n > 0) {
+        if (result[n + 10] != '\r')
+            output = CHECK;
 
+        n = result.find("Legal moves:");
+        if (result[n + 13] == '\r') {
+            if (output == CHECK)
+                output = CHECKMATE;
+            else
+                output = STALEMATE;
+        }
+    }
     return output;
 }
 

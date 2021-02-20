@@ -153,7 +153,7 @@ namespace menu {
 			while (SDL_PollEvent(&event) != 0) {
 				switch (event.type) {
 				case SDL_QUIT:
-					a = 0;
+					a = 2;
 					break;
 				case SDL_MOUSEBUTTONDOWN:
 

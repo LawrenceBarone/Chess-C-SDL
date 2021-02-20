@@ -459,7 +459,6 @@ void Gui::handleInput()
 
         if (e.type == SDL_KEYDOWN)
         {
-            cout << "Clavier" << endl;
             handleKeyDown(e);
         }
         else if (e.type == SDL_MOUSEBUTTONDOWN)
