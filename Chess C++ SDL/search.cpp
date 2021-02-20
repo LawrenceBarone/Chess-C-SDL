@@ -5,7 +5,7 @@ using namespace defs;
 
 extern int evaluation(board::Game& game);
 
-extern int maxDepth = 3;
+extern int maxDepth = 2;
 
 void pickMove(int moveIndex, std::vector<MoveVal>& moves)
 {

@@ -8,6 +8,7 @@ namespace timer {
 	class timer
 	{
 	public:
+		bool end = false;
 		timer();
 		~timer();
 		void init();

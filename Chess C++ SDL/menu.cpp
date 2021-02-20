@@ -3,6 +3,7 @@
 
 namespace menu {
 
+	bool end = false;
 	const int SCREEN_HEIGHT = 800;
 	const int SCREEN_WIDTH = 600;
 
@@ -127,7 +128,7 @@ namespace menu {
 		sH = IMG_Load("imgs/humanblanc.png");
 		tH = SDL_CreateTextureFromSurface(renderer, sH);
 
-		sFlecheDW = IMG_Load("imgs/flecheNoir.png");
+		sFlecheDW = IMG_Load("imgs/flecheBlanche.png");
 		tFlecheDW = SDL_CreateTextureFromSurface(renderer, sFlecheDW);
 
 		sFlecheGB = IMG_Load("imgs/flecheNoir.png");
@@ -145,14 +146,14 @@ namespace menu {
 
 	void menu::run() {
 		init();
-		bool a = true;
-		while (a) {
+		int a = 1;
+		while (a == 1) {
 			SDL_GetMouseState(&Mx, &My);
 			SDL_Event event;
 			while (SDL_PollEvent(&event) != 0) {
 				switch (event.type) {
 				case SDL_QUIT:
-					a = false;
+					a = 0;
 					break;
 				case SDL_MOUSEBUTTONDOWN:
 
@@ -186,7 +187,6 @@ namespace menu {
 							FlechePosGB.w = 0;
 							FlechePosGB.h = 0;
 							GlobalStruct.bAIChoice = defs::PLAYER;
-
 							hn = true;
 						}
 						else {
@@ -298,7 +298,8 @@ namespace menu {
 						txtLaw = SDL_CreateTextureFromSurface(renderer, sxtLaw);
 						if (eloLaw < 4) {
 							eloLaw++;
-							GlobalStruct.depthLawrence = eloLaw;
+							GlobalStruct.depthLawrence = to_string(eloLaw);
+							
 						}
 
 
@@ -311,7 +312,8 @@ namespace menu {
 						txtLaw = SDL_CreateTextureFromSurface(renderer, sxtLaw);
 						if (eloLaw > 0) {
 							eloLaw--;
-							GlobalStruct.depthLawrence = eloLaw;
+							GlobalStruct.depthLawrence = to_string(eloLaw);
+							
 						}
 
 					}
@@ -383,7 +385,7 @@ namespace menu {
 					}
 					//Exit
 					if (Mx >= exitPos.x && Mx <= exitPos.x + exitPos.w && My >= exitPos.y && My <= exitPos.y + exitPos.h) {
-						return;
+						a = 2;
 					}
 					break;
 
@@ -404,13 +406,25 @@ namespace menu {
 			SDL_RenderCopy(renderer, tIta, NULL, &ItaPos);
 			SDL_RenderCopy(renderer, tEloStockfish, NULL, &StockTextPos);
 			SDL_RenderCopy(renderer, txtLaw, NULL, &LawTextPos);
-			SDL_RenderCopy(renderer, tFlecheDW, NULL, &FlechePosDW);
-			SDL_RenderCopy(renderer, tFlecheGB, NULL, &FlechePosGB);
+			if (hw == false) {
+				SDL_RenderCopy(renderer, tFlecheDW, NULL, &FlechePosDW);
+			}
+			if (hn == false) {
+				SDL_RenderCopy(renderer, tFlecheGB, NULL, &FlechePosGB);
+			}
+			
 			SDL_RenderPresent(renderer);
 		}
-		menu::~menu();
-		gui::Gui gui;
-		gui.run();
+		if (a == 2) {
+			end = true;
+			return;
+		}
+		else {
+			menu::~menu();
+			gui::Gui gui;
+			gui.run();
+		}
+		
 	}
 
 	menu::menu() {
@@ -418,52 +432,57 @@ namespace menu {
 	}
 
 	menu::~menu() {
-		SDL_DestroyTexture(background_texture);
-		SDL_FreeSurface(background_surface);
+		if (!end) {
+			SDL_DestroyTexture(background_texture);
+			SDL_FreeSurface(background_surface);
 
-		SDL_DestroyTexture(tTimeF);
-		SDL_FreeSurface(sTimeF);
+			SDL_DestroyTexture(tTimeF);
+			SDL_FreeSurface(sTimeF);
 
-		SDL_DestroyTexture(tFlecheDW);
-		SDL_FreeSurface(sFlecheDW);
+			SDL_DestroyTexture(tFlecheDW);
+			SDL_FreeSurface(sFlecheDW);
 
-		SDL_DestroyTexture(tFlecheGB);
-		SDL_FreeSurface(sFlecheGB);
+			SDL_DestroyTexture(tFlecheGB);
+			SDL_FreeSurface(sFlecheGB);
 
-		SDL_DestroyTexture(tStartGame);
-		SDL_FreeSurface(sStartGame);
+			SDL_DestroyTexture(tStartGame);
+			SDL_FreeSurface(sStartGame);
 
-		SDL_DestroyTexture(txtLaw);
-		SDL_FreeSurface(sxtLaw);
+			SDL_DestroyTexture(txtLaw);
+			SDL_FreeSurface(sxtLaw);
 
-		SDL_DestroyTexture(tH);
-		SDL_FreeSurface(sH);
+			SDL_DestroyTexture(tH);
+			SDL_FreeSurface(sH);
 
-		SDL_DestroyTexture(tHn);
-		SDL_FreeSurface(sHn);
+			SDL_DestroyTexture(tHn);
+			SDL_FreeSurface(sHn);
 
-		SDL_DestroyTexture(tStock);
-		SDL_FreeSurface(sStock);
+			SDL_DestroyTexture(tStock);
+			SDL_FreeSurface(sStock);
 
-		SDL_DestroyTexture(tLaw);
-		SDL_FreeSurface(sLaw);
+			SDL_DestroyTexture(tLaw);
+			SDL_FreeSurface(sLaw);
 
-		SDL_DestroyTexture(tSupSign);
-		SDL_FreeSurface(sSupSign);
+			SDL_DestroyTexture(tSupSign);
+			SDL_FreeSurface(sSupSign);
 
-		SDL_DestroyTexture(tInfSign);
-		SDL_FreeSurface(sInfSign);
+			SDL_DestroyTexture(tInfSign);
+			SDL_FreeSurface(sInfSign);
 
-		SDL_DestroyTexture(tNoT);
-		SDL_FreeSurface(sNoT);
+			SDL_DestroyTexture(tNoT);
+			SDL_FreeSurface(sNoT);
 
-		SDL_DestroyTexture(tSici);
-		SDL_FreeSurface(sSici);
+			SDL_DestroyTexture(tSici);
+			SDL_FreeSurface(sSici);
 
-		SDL_DestroyTexture(tIta);
-		SDL_FreeSurface(sIta);
+			SDL_DestroyTexture(tIta);
+			SDL_FreeSurface(sIta);
 
-		SDL_DestroyWindow(window);
+			SDL_DestroyWindow(window);
+		}
+			
+		
+		
 	}
 
 }

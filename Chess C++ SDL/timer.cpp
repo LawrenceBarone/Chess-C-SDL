@@ -128,15 +128,20 @@ namespace timer {
 	}
 
 	timer::~timer() {
+		if (!end) {
+			SDL_FreeSurface(textSurface[0]);
+			SDL_FreeSurface(textSurface[1]);
+			SDL_DestroyTexture(textTexture);
+
+			SDL_DestroyRenderer(renderer);
+			SDL_DestroyWindow(window);
+
+			//text close
+			TTF_CloseFont(font);
+		}
+			
 		
-		SDL_FreeSurface(textSurface[0]);
-		SDL_FreeSurface(textSurface[1]);
-		SDL_DestroyTexture(textTexture);
-
-		SDL_DestroyRenderer(renderer);
-		SDL_DestroyWindow(window);
-
-		//text close
-		TTF_CloseFont(font);
+		
+		
 	}
 }
